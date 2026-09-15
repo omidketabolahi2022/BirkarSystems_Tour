@@ -1,0 +1,1 @@
+- update `requirements.txt` to cite exact versions
