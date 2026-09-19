@@ -6,7 +6,7 @@ CREATE UNIQUE INDEX UX_TourImg_Banner
     WHERE label = 'banner';
 
 CREATE UNIQUE INDEX UX_Booking_ActivePerUser
-    ON Booking(tourID, username)
+    ON Booking(tourID, userID)
     WHERE status = 'accepted';
 
 CREATE TRIGGER TRG_Booking_CheckCapacity
