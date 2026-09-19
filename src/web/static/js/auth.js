@@ -1,3 +1,5 @@
+let currentToken = null;
+
 function signupBooker(username, password, email, number, role = "booker") {
     return fetch("/api/signup",
     {
@@ -17,11 +19,11 @@ function signupBooker(username, password, email, number, role = "booker") {
 }
 
 function confirmSignup() {
-    const username = document.getElementById("signup-username").value;
-    const email = document.getElementById("signup-email").value;
-    const number = document.getElementById("signup-number").value;
-    const password = document.getElementById("signup-password").value;
-    const confirmPassword = document.getElementById("signup-confirm").value;
+    const username = document.getElementById("signup-username").value.trim();
+    const email = document.getElementById("signup-email").value.trim();
+    const number = document.getElementById("signup-number").value.trim();
+    const password = document.getElementById("signup-password").value.trim();
+    const confirmPassword = document.getElementById("signup-confirm").value.trim();
     const singupStatus = document.getElementById("signup-status");
     if (password !== confirmPassword) {
         singupStatus.textContent = "Passwords do not match";
@@ -36,9 +38,51 @@ function confirmSignup() {
             singupStatus.classList.add("alert-success");
         })
         .catch(err => {
-            singupStatus.textContent = err.message;
+            singupStatus.textContent = `Signup failed: ${err.message}`;
             singupStatus.classList.remove("alert-success");
             singupStatus.classList.add("alert-error");
+        })
+
+}
+
+function loginBooker(username, password) {
+    const formData = new URLSearchParams();
+    formData.append("username", username);
+    formData.append("password", password);
+    return fetch("/api/login",
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: formData
+        }
+    )
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`failed to authenticate user '${username}'`);
+            }
+            return response.json();
+        });
+}
+
+function confirmLogin() {
+    const username = document.getElementById("login-username").value.trim();
+    const password = document.getElementById("login-password").value.trim();
+    const loginStatus = document.getElementById("login-status");
+    currentToken = null;
+    loginBooker(username, password)
+        .then(result => {
+            currentToken = result.access_token;
+            console.log(currentToken);
+            loginStatus.textContent = "Login successful!";
+            loginStatus.classList.remove("alert-error");
+            loginStatus.classList.add("alert-success");
+        })
+        .catch(err => {
+            loginStatus.textContent = `Login failed: ${err.message}`;
+            loginStatus.classList.remove("alert-success");
+            loginStatus.classList.add("alert-error");
         })
 
 }
@@ -48,4 +92,10 @@ function confirmSignup() {
 document.getElementById("signup-form").addEventListener("submit", function (event) {
     event.preventDefault();
     confirmSignup();
+});
+
+
+document.getElementById("login-form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    confirmLogin();
 });

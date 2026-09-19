@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select
 from pwdlib import PasswordHash
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -33,10 +34,32 @@ app.mount(
     name="static"
 )
 
+
+def getCurrentUser(
+        token: str = Depends(oauth2_scheme),
+        session: Session = Depends(getSession)
+):
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALG])
+        username = payload.get("sub")
+        if not username:
+            raise HTTPException(status_code=401, detail="empty username")
+        username = username.strip()
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="invalid token")
+    stmt = select(AppUser).where(AppUser.username == username)
+    current_user = session.execute(stmt).scalar_one_or_none()
+    print(current_user)
+    if not current_user:
+        raise HTTPException(status_code=401, detail="user no longer exists")
+    return current_user
+
 def createToken(username):
     payload = {
         "sub": username,
-        "exp": datetime.now(timezone.utc) + timedelta(seconds=30)
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=30)
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALG)
 
@@ -48,6 +71,22 @@ def homePage():
 @app.get("/auth")
 def loginPage():
     return FileResponse(WEB_DIR / "pages" / "auth.html")
+
+@app.post("/api/login")
+def loginAppUser(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session: Session = Depends(getSession)
+):
+    username = form_data.username.strip()
+    raw_password = form_data.password.strip()
+    stmt = select(AppUser).where(AppUser.username == username)
+    user_record = session.execute(stmt).scalar_one_or_none()
+    if not user_record:
+        raise HTTPException(status_code=401, detail="the username is wrong")
+    if not phash.verify(raw_password, user_record.password):
+        raise HTTPException(status_code=401, detail="the password is wrong")
+    token = createToken(username)
+    return {"access_token": token, "token_type": "bearer"}
 
 @app.post("/api/signup", status_code=201)
 def signupAppUser(
