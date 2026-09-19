@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tour Manager - Log in / Sign up</title>
+  <link rel="stylesheet" href="/static/css/auth.css">
+</head>
+<body>
+  <div class="brand">Tour Manager</div>
+
+  <div class="card">
+
+    <!-- These two radio buttons track which tab is active.
+         They must come before .tabs and .panels in the HTML
+         for the CSS rules above to be able to "see" them. -->
+    <input type="radio" name="tab" id="tab-login" class="tab-input" checked>
+    <input type="radio" name="tab" id="tab-signup" class="tab-input">
+
+    <div class="tabs">
+      <label for="tab-login" class="tab">Log in</label>
+      <label for="tab-signup" class="tab">Sign up</label>
+    </div>
+
+    <div class="panels">
+
+      <!-- ============== LOG IN PANEL ============== -->
+      <div class="panel" id="login-panel">
+
+        <!-- Example of an error message. Hidden/shown later by
+             your backend logic - kept visible here just so you
+             can see and adjust the style. -->
+        <div class="alert alert-error">
+          Incorrect username or password.
+        </div>
+
+        <form>
+          <div class="field">
+            <label for="login-username">Username</label>
+            <input type="text" id="login-username" name="username" placeholder="Enter your username">
+          </div>
+
+          <div class="field">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" name="password" placeholder="Enter your password">
+          </div>
+
+          <div class="link-row">
+            <a href="#">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn-primary">Log in</button>
+        </form>
+      </div>
+
+      <!-- ============== SIGN UP PANEL ============== -->
+      <div class="panel" id="signup-panel">
+
+        <!-- Example of a success message, same idea as above. -->
+        <div class="alert alert-success" id="signup-status">
+          Account created successfully.
+        </div>
+
+        <form id="signup-form">
+          <div class="field">
+            <label for="signup-username">Username</label>
+            <input type="text" id="signup-username" name="username" placeholder="Choose a username">
+          </div>
+
+          <div class="field">
+            <label for="signup-email">Email</label>
+            <input type="email" id="signup-email" name="email" placeholder="you@example.com">
+          </div>
+
+          <div class="field">
+            <label for="signup-number">Phone number</label>
+            <input type="tel" id="signup-number" name="number" placeholder="09XXXXXXXXX">
+          </div>
+
+          <div class="field">
+            <label for="signup-password">Password</label>
+            <input type="password" id="signup-password" name="password" placeholder="Create a password">
+          </div>
+
+          <div class="field">
+            <label for="signup-confirm">Confirm password</label>
+            <input type="password" id="signup-confirm" name="confirm_password" placeholder="Repeat your password">
+            <div class="field-hint">Must match the password above.</div>
+          </div>
+
+          <button type="submit" class="btn-primary">Sign up</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+  <script src="/static/js/auth.js"></script>
+
+</body>
+</html>
