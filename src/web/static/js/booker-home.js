@@ -2,6 +2,11 @@
 // on entrance we need to load My bookings (with status = accepted)
 // on entrance we need to load the User profile (username, email, etc) + all booking (whether failed, accepted, or canceled)
 
+function logoutBooker() {
+    sessionStorage.removeItem("token");
+    window.location.replace("/auth");
+}
+
 function getValidTours() {
     return fetch("http://127.0.0.1:8000/api/getValidTours", {
         headers: {
