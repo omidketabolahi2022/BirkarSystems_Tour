@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select
+from sqlalchemy import select, func
 from pwdlib import PasswordHash
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -51,7 +51,6 @@ def getCurrentUser(
         raise HTTPException(status_code=401, detail="invalid token")
     stmt = select(AppUser).where(AppUser.username == username)
     current_user = session.execute(stmt).scalar_one_or_none()
-    print(current_user)
     if not current_user:
         raise HTTPException(status_code=401, detail="user no longer exists")
     return current_user
@@ -118,3 +117,25 @@ def signupAppUser(
         session.rollback()
         raise HTTPException(status_code=400, detail="integrity issue")
     return {"username": new_user.username}
+
+
+@app.post("/api/getAllTours")
+def getAllTours(
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    tours_list = session.execute(select(Tour)).scalars().all()
+    return {"allTours": tours_list}
+
+
+@app.get("/api/getValidTours")
+def getValidTours(
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    stmt = select(Tour).where(
+        Tour.status == "pending",
+        Tour.start_time > func.SYSDATETIME()
+    )
+    tours_list = session.execute(stmt).scalars().all()
+    return {"validTours": tours_list}

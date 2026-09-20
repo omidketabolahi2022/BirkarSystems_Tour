@@ -1,2 +1,1 @@
 - update `requirements.txt` to cite exact versions
-- switch to `sessionStorage` instead of `localStorage` (the methods are exactly the same)

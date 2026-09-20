@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script>
-  if (!localStorage.getItem("token")) {
+  if (!sessionStorage.getItem("token")) {
     window.location.replace("/auth");
   }
 </script>
@@ -34,58 +34,7 @@
     <div class="panels">
 
       <!-- ============== ALL TOURS ============== -->
-      <div class="panel" id="all-tours-panel">
-
-        <!-- Placeholder tours below. Each of these cards will
-             later be generated from the /api/tours response
-             instead of being written out by hand like this. -->
-
-        <div class="tour-card">
-          <div class="tour-banner">Banner<br>image</div>
-          <div class="tour-info">
-            <div>
-              <div class="tour-name">Istanbul Highlights</div>
-              <div class="tour-route">Tehran &rarr; Istanbul</div>
-              <div class="tour-meta">5 days &middot; Departs Oct 12, 2026</div>
-            </div>
-            <div class="tour-info-footer">
-              <span class="tour-price">$450</span>
-              <button type="button" class="btn btn-primary">Book</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="tour-card">
-          <div class="tour-banner">Banner<br>image</div>
-          <div class="tour-info">
-            <div>
-              <div class="tour-name">Shiraz Heritage Tour</div>
-              <div class="tour-route">Tehran &rarr; Shiraz</div>
-              <div class="tour-meta">3 days &middot; Departs Nov 2, 2026</div>
-            </div>
-            <div class="tour-info-footer">
-              <span class="tour-price">$180</span>
-              <button type="button" class="btn btn-primary">Book</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="tour-card">
-          <div class="tour-banner">Banner<br>image</div>
-          <div class="tour-info">
-            <div>
-              <div class="tour-name">Caspian Coast Getaway</div>
-              <div class="tour-route">Tehran &rarr; Rasht</div>
-              <div class="tour-meta">2 days &middot; Departs Oct 20, 2026</div>
-            </div>
-            <div class="tour-info-footer">
-              <span class="tour-price">$95</span>
-              <button type="button" class="btn btn-primary">Book</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
+      <div class="panel" id="all-tours-panel"></div>
 
       <!-- ============== MY TOURS ============== -->
       <div class="panel" id="my-tours-panel">
@@ -188,5 +137,6 @@
     </div>
   </div>
 
+<script src="/static/js/booker-home.js"></script>
 </body>
 </html>

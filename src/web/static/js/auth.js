@@ -68,11 +68,10 @@ function confirmLogin() {
     const username = document.getElementById("login-username").value.trim();
     const password = document.getElementById("login-password").value.trim();
     const loginStatus = document.getElementById("login-status");
-    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
     loginBooker(username, password)
         .then(result => {
-            localStorage.setItem("token", result.access_token);
-            // TODO: switch to 'sessionStorage' instead of 'localStorage'
+            sessionStorage.setItem("token", result.access_token);
             loginStatus.textContent = "Login successful!";
             loginStatus.classList.remove("alert-error");
             loginStatus.classList.add("alert-success");
