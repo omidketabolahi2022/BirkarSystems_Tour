@@ -20,7 +20,7 @@ app.add_middleware(
     allow_headers=["*"],
     allow_methods=["*"]
 )
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="user/auth")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/login")
 phash = PasswordHash.recommended()
 
 WEB_DIR = Path(__file__).resolve().parent / "web"
@@ -56,21 +56,26 @@ def getCurrentUser(
         raise HTTPException(status_code=401, detail="user no longer exists")
     return current_user
 
-def createToken(username):
+def createToken(username, role, minutes=30):
     payload = {
         "sub": username,
-        "exp": datetime.now(timezone.utc) + timedelta(minutes=30)
+        "role": role,
+        "exp": datetime.now(timezone.utc) + timedelta(minutes=minutes)
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALG)
 
 
 @app.get("/")
-def homePage():
+def rootPage():
     return FileResponse(WEB_DIR / "pages" / "auth.html")
 
 @app.get("/auth")
 def loginPage():
     return FileResponse(WEB_DIR / "pages" / "auth.html")
+
+@app.get("/booker-home")
+def bookerHomePage():
+    return FileResponse(WEB_DIR / "pages" / "booker-home.html")
 
 @app.post("/api/login")
 def loginAppUser(
@@ -85,7 +90,7 @@ def loginAppUser(
         raise HTTPException(status_code=401, detail="the username is wrong")
     if not phash.verify(raw_password, user_record.password):
         raise HTTPException(status_code=401, detail="the password is wrong")
-    token = createToken(username)
+    token = createToken(user_record.username, user_record.role)
     return {"access_token": token, "token_type": "bearer"}
 
 @app.post("/api/signup", status_code=201)

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  if (!localStorage.getItem("token")) {
+    window.location.replace("/auth");
+  }
+</script>
+<title>Tour Manager - Booker Home</title>
+<link rel="stylesheet" href="/static/css/base.css">
+<link rel="stylesheet" href="/static/css/booker-home.css">
+</head>
+<body>
+
+  <div class="container">
+
+    <div class="brand">Tour Manager</div>
+
+    <!-- These three radio buttons track which tab is active.
+         They must come before .tabs and .panels for the CSS
+         rules in booker-home.css to be able to "see" them. -->
+    <input type="radio" name="tab" id="tab-all-tours" class="tab-input" checked>
+    <input type="radio" name="tab" id="tab-my-tours" class="tab-input">
+    <input type="radio" name="tab" id="tab-my-account" class="tab-input">
+
+    <div class="tabs">
+      <label for="tab-all-tours" class="tab">All tours</label>
+      <label for="tab-my-tours" class="tab">My tours</label>
+      <label for="tab-my-account" class="tab">My account</label>
+    </div>
+
+    <div class="panels">
+
+      <!-- ============== ALL TOURS ============== -->
+      <div class="panel" id="all-tours-panel">
+
+        <!-- Placeholder tours below. Each of these cards will
+             later be generated from the /api/tours response
+             instead of being written out by hand like this. -->
+
+        <div class="tour-card">
+          <div class="tour-banner">Banner<br>image</div>
+          <div class="tour-info">
+            <div>
+              <div class="tour-name">Istanbul Highlights</div>
+              <div class="tour-route">Tehran &rarr; Istanbul</div>
+              <div class="tour-meta">5 days &middot; Departs Oct 12, 2026</div>
+            </div>
+            <div class="tour-info-footer">
+              <span class="tour-price">$450</span>
+              <button type="button" class="btn btn-primary">Book</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tour-card">
+          <div class="tour-banner">Banner<br>image</div>
+          <div class="tour-info">
+            <div>
+              <div class="tour-name">Shiraz Heritage Tour</div>
+              <div class="tour-route">Tehran &rarr; Shiraz</div>
+              <div class="tour-meta">3 days &middot; Departs Nov 2, 2026</div>
+            </div>
+            <div class="tour-info-footer">
+              <span class="tour-price">$180</span>
+              <button type="button" class="btn btn-primary">Book</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="tour-card">
+          <div class="tour-banner">Banner<br>image</div>
+          <div class="tour-info">
+            <div>
+              <div class="tour-name">Caspian Coast Getaway</div>
+              <div class="tour-route">Tehran &rarr; Rasht</div>
+              <div class="tour-meta">2 days &middot; Departs Oct 20, 2026</div>
+            </div>
+            <div class="tour-info-footer">
+              <span class="tour-price">$95</span>
+              <button type="button" class="btn btn-primary">Book</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============== MY TOURS ============== -->
+      <div class="panel" id="my-tours-panel">
+
+        <!-- Only bookings with status "accepted" belong here.
+             These are placeholders, same as above. -->
+
+        <div class="booking-row">
+          <div>
+            <div class="booking-title">Istanbul Highlights</div>
+            <div class="booking-meta">2 people &middot; Departs Oct 12, 2026</div>
+          </div>
+          <button type="button" class="btn btn-outline-danger">Cancel booking</button>
+        </div>
+
+        <div class="booking-row">
+          <div>
+            <div class="booking-title">Caspian Coast Getaway</div>
+            <div class="booking-meta">1 person &middot; Departs Oct 20, 2026</div>
+          </div>
+          <button type="button" class="btn btn-outline-danger">Cancel booking</button>
+        </div>
+
+      </div>
+
+      <!-- ============== MY ACCOUNT ============== -->
+      <div class="panel" id="account-panel">
+
+        <div class="section-title">Your information</div>
+
+        <form id="account-form">
+          <div class="field">
+            <label for="account-username">Username</label>
+            <input type="text" id="account-username" name="username" value="BookerOmid">
+          </div>
+
+          <div class="field">
+            <label for="account-email">Email</label>
+            <input type="email" id="account-email" name="email" value="omid@example.com">
+          </div>
+
+          <div class="field">
+            <label for="account-number">Phone number</label>
+            <input type="tel" id="account-number" name="number" value="09123456789">
+          </div>
+
+          <div class="account-actions">
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </div>
+        </form>
+
+        <div class="logout-row">
+          <button type="button" class="btn btn-outline-neutral">Log out</button>
+        </div>
+
+        <!-- Optional transaction history: every booking the user
+             has ever made, whatever its final status was. -->
+        <div class="history-wrapper">
+          <div class="section-title">Transaction history</div>
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Tour</th>
+                <th>Date</th>
+                <th>People</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Istanbul Highlights</td>
+                <td>Sep 1, 2026</td>
+                <td>2</td>
+                <td><span class="status-badge status-accepted">Accepted</span></td>
+              </tr>
+              <tr>
+                <td>Shiraz Heritage Tour</td>
+                <td>Aug 15, 2026</td>
+                <td>1</td>
+                <td><span class="status-badge status-canceled">Canceled</span></td>
+              </tr>
+              <tr>
+                <td>Caspian Coast Getaway</td>
+                <td>Sep 10, 2026</td>
+                <td>1</td>
+                <td><span class="status-badge status-accepted">Accepted</span></td>
+              </tr>
+              <tr>
+                <td>Tabriz Bazaar Tour</td>
+                <td>Jul 20, 2026</td>
+                <td>4</td>
+                <td><span class="status-badge status-failed">Failed</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

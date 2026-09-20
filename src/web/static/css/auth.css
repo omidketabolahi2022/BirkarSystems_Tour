@@ -1,50 +1,5 @@
-/* ============================================================
-    COLOR & SPACING VARIABLES
-    Keeping every color in one place at the top makes it easy to
-    change the whole theme later without hunting through the file.
-    ============================================================ */
-:root {
-    --color-bg: #F4F6F9;          /* page background (light gray-blue) */
-    --color-card: #FFFFFF;        /* the white card that holds the form */
-    --color-border: #E1E5EB;      /* light gray borders/dividers */
-    --color-text: #202632;        /* main text (headings, labels) */
-    --color-text-muted: #626C7A;  /* secondary/help text */
-
-    --color-primary: #2F6FED;       /* main blue (buttons, links, accents) */
-    --color-primary-hover: #2557C7; /* darker blue for hover state */
-
-    --color-success: #227A46;     /* green text for success message */
-    --color-success-bg: #EAF7EE;  /* light green background */
-    --color-success-border: #BFE6CC;
-
-    --color-error: #B23A3A;       /* red text for error message */
-    --color-error-bg: #FCEBEC;    /* light red background */
-    --color-error-border: #F3C6C9;
-
-    --radius: 8px;                /* corner rounding used everywhere */
-    --spacing: 1rem;               /* base spacing unit (16px) */
-}
-
-/* ============================================================
-    BASIC RESET
-    Browsers add their own default margins/padding to elements.
-    This removes those so our own spacing is predictable.
-    ============================================================ */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
 body {
-    /* A plain system font stack: no external font file to load,
-    and it looks native on whatever device opens the page. */
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-    background-color: var(--color-bg);
-    color: var(--color-text);
     min-height: 100vh;
-
-    /* Centering the card both horizontally and vertically. */
     display: flex;
     flex-direction: column;
     align-items: center;

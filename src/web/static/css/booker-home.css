@@ -1,0 +1,335 @@
+/* ============================================================
+   PAGE LAYOUT
+   ============================================================ */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.brand {
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+/* ============================================================
+   TABS (All tours / My tours / My account)
+
+   Same CSS-only technique as the login/signup page: three
+   hidden radio buttons hold "which tab is active", the visible
+   tab labels just point at them, and CSS shows the matching
+   panel based on which radio is checked. No JavaScript needed
+   just to switch tabs.
+   ============================================================ */
+.tab-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 1.5rem;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 0.75rem 0;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+#tab-all-tours:checked ~ .tabs label[for="tab-all-tours"],
+#tab-my-tours:checked ~ .tabs label[for="tab-my-tours"],
+#tab-my-account:checked ~ .tabs label[for="tab-my-account"] {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.panel {
+  display: none;
+}
+
+#tab-all-tours:checked ~ .panels #all-tours-panel,
+#tab-my-tours:checked ~ .panels #my-tours-panel,
+#tab-my-account:checked ~ .panels #account-panel {
+  display: block;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* ============================================================
+   BUTTONS
+   One base class (.btn) plus a modifier for each color/style,
+   so every button shares the same size/shape and only the
+   color changes. The only animation anywhere is the hover
+   color change - nothing moves or fades.
+   ============================================================ */
+.btn {
+  display: inline-block;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+}
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.btn-outline-danger {
+  background-color: transparent;
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+.btn-outline-danger:hover {
+  background-color: var(--color-error);
+  color: #FFFFFF;
+}
+
+.btn-outline-neutral {
+  background-color: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+.btn-outline-neutral:hover {
+  background-color: var(--color-neutral-bg);
+}
+
+/* ============================================================
+   ALL TOURS - tour card
+   Banner fills a square on the left, the rest of the tour's
+   info sits to its right, with the Book button at the
+   bottom-right of that info area.
+   ============================================================ */
+.tour-card {
+  display: flex;
+  gap: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: var(--color-card);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tour-banner {
+  /* Placeholder for now - swap this <div> for an <img> once
+     real tour images come from the API. */
+  width: 110px;
+  height: 110px;
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  background-color: #DCE6FB;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tour-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.tour-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tour-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.tour-route {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.tour-meta {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.tour-info-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+}
+
+.tour-price {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* ============================================================
+   MY TOURS - booking row
+   ============================================================ */
+.booking-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: var(--color-card);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.booking-title {
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+.booking-meta {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+/* ============================================================
+   STATUS BADGES
+   Used for both "My tours" and the transaction history table.
+   ============================================================ */
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-accepted {
+  background-color: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.status-failed {
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.status-canceled {
+  background-color: var(--color-neutral-bg);
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+   MY ACCOUNT - form fields
+   (Same field style as the login/signup page, repeated here
+   since each page currently owns its own CSS file.)
+   ============================================================ */
+.field {
+  margin-bottom: 1.1rem;
+  max-width: 360px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.field input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.15);
+}
+
+.account-actions {
+  margin-top: 1.5rem;
+}
+
+.logout-row {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* ============================================================
+   TRANSACTION HISTORY TABLE
+   ============================================================ */
+.history-wrapper {
+  overflow-x: auto; /* keeps the table from breaking mobile layout */
+  margin-top: 2rem;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table th,
+.history-table td {
+  text-align: left;
+  padding: 0.65rem 0.5rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.history-table th {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* ============================================================
+   SMALL SCREENS
+   ============================================================ */
+@media (max-width: 560px) {
+  .tour-card {
+    flex-direction: column;
+  }
+  .tour-banner {
+    width: 100%;
+    height: 140px;
+  }
+  .booking-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

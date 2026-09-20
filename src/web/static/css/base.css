@@ -1,0 +1,42 @@
+/* ============================================================
+   SHARED DESIGN TOKENS + RESET
+   Link this file BEFORE a page's own stylesheet, on every page.
+   Keeping the color palette here (instead of copy-pasted into
+   every page's CSS) means changing the theme later only means
+   editing this one file.
+   ============================================================ */
+:root {
+  --color-bg: #F4F6F9;          /* page background (light gray-blue) */
+  --color-card: #FFFFFF;        /* cards, inputs, panels */
+  --color-border: #E1E5EB;      /* light gray borders/dividers */
+  --color-text: #202632;        /* main text (headings, labels) */
+  --color-text-muted: #626C7A;  /* secondary/help text */
+
+  --color-primary: #2F6FED;       /* main blue (buttons, links, accents) */
+  --color-primary-hover: #2557C7; /* darker blue for hover state */
+
+  --color-success: #227A46;
+  --color-success-bg: #EAF7EE;
+  --color-success-border: #BFE6CC;
+
+  --color-error: #B23A3A;
+  --color-error-bg: #FCEBEC;
+  --color-error-border: #F3C6C9;
+
+  --color-neutral-bg: #EEF0F3;  /* used for "canceled" badges, subtle fills */
+
+  --radius: 8px;
+  --spacing: 1rem;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}

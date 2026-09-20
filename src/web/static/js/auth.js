@@ -1,5 +1,3 @@
-let currentToken = null;
-
 function signupBooker(username, password, email, number, role = "booker") {
     return fetch("/api/signup",
     {
@@ -70,14 +68,16 @@ function confirmLogin() {
     const username = document.getElementById("login-username").value.trim();
     const password = document.getElementById("login-password").value.trim();
     const loginStatus = document.getElementById("login-status");
-    currentToken = null;
+    localStorage.removeItem("token");
     loginBooker(username, password)
         .then(result => {
-            currentToken = result.access_token;
-            console.log(currentToken);
+            localStorage.setItem("token", result.access_token);
+            // TODO: switch to 'sessionStorage' instead of 'localStorage'
             loginStatus.textContent = "Login successful!";
             loginStatus.classList.remove("alert-error");
             loginStatus.classList.add("alert-success");
+            // TODO: how do we handle the transition if the logged in user is a manager not a booker?
+            window.location.href = "/booker-home";
         })
         .catch(err => {
             loginStatus.textContent = `Login failed: ${err.message}`;
