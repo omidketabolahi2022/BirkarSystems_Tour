@@ -118,6 +118,15 @@ def signupAppUser(
         raise HTTPException(status_code=400, detail="integrity issue")
     return {"username": new_user.username}
 
+@app.get("/api/me")
+def getMe(current_user: AppUser = Depends(getCurrentUser)):
+    return {
+        "username": current_user.username,
+        "email": current_user.email,
+        "number": current_user.number
+    }
+
+
 
 @app.post("/api/getAllTours")
 def getAllTours(
@@ -139,3 +148,35 @@ def getValidTours(
     )
     tours_list = session.execute(stmt).scalars().all()
     return {"validTours": tours_list}
+
+@app.get("/api/getMyBookings")
+def getMyBookings(
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    stmt = select(Booking).where(Booking.userID == current_user.userID)
+    bookings_list = session.execute(stmt).scalars().all()
+    bookings_list = [
+        {
+            "bookingID": b.bookingID,
+            "tourID": b.tourID,
+            "userID": b.userID,
+            "booking_date": b.booking_date,
+            "status": b.status,
+            "num_people": b.num_people,
+            "tour_name": b.tour.tour_name
+        } for b in bookings_list
+    ]
+    return {"myBookings": bookings_list}
+
+@app.get("/api/getMyAcceptedBookings")
+def getMyAcceptedBookings(
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    stmt = select(Booking).where(
+        Booking.userID == current_user.userID,
+        Booking.status == "accepted"
+    )
+    bookings_list = session.execute(stmt).scalars().all()
+    return {"myAcceptedBookings": bookings_list}

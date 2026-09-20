@@ -68,7 +68,7 @@
         <form id="account-form">
           <div class="field">
             <label for="account-username">Username</label>
-            <input type="text" id="account-username" name="username" value="BookerOmid">
+            <input type="text" id="account-username" disabled name="username" value="BookerOmid">
           </div>
 
           <div class="field">
@@ -93,7 +93,7 @@
         <!-- Optional transaction history: every booking the user
              has ever made, whatever its final status was. -->
         <div class="history-wrapper">
-          <div class="section-title">Transaction history</div>
+          <div class="section-title">Booking history</div>
           <table class="history-table">
             <thead>
               <tr>
@@ -103,32 +103,7 @@
                 <th>Status</th>
               </tr>
             </thead>
-            <tbody>
-              <tr>
-                <td>Istanbul Highlights</td>
-                <td>Sep 1, 2026</td>
-                <td>2</td>
-                <td><span class="status-badge status-accepted">Accepted</span></td>
-              </tr>
-              <tr>
-                <td>Shiraz Heritage Tour</td>
-                <td>Aug 15, 2026</td>
-                <td>1</td>
-                <td><span class="status-badge status-canceled">Canceled</span></td>
-              </tr>
-              <tr>
-                <td>Caspian Coast Getaway</td>
-                <td>Sep 10, 2026</td>
-                <td>1</td>
-                <td><span class="status-badge status-accepted">Accepted</span></td>
-              </tr>
-              <tr>
-                <td>Tabriz Bazaar Tour</td>
-                <td>Jul 20, 2026</td>
-                <td>4</td>
-                <td><span class="status-badge status-failed">Failed</span></td>
-              </tr>
-            </tbody>
+            <tbody id="historyTable"></tbody>
           </table>
         </div>
 
