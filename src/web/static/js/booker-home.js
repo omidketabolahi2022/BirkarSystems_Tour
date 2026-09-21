@@ -310,8 +310,11 @@ document.getElementById("modal-submit-btn").addEventListener("click", function (
     if (!numPeople || numPeople < 1) return;
 
     submitBooking(bookingModalTourID, numPeople)
-        .then(() => {
+        .then(booking => {
             markTourAsBooked(bookingModalTourID);
+            const myToursPanel = document.getElementById("my-tours-panel");
+            const bookedCard = _createBookedCard(booking);
+            myToursPanel.appendChild(bookedCard);
             closeBookingModal();
         })
         .catch(err => alert(err.message));
