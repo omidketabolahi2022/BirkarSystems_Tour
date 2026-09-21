@@ -1,14 +1,10 @@
-// on entrance we need to load All tours
-// on entrance we need to load My bookings (with status = accepted)
-// on entrance we need to load the User profile (username, email, etc) + all booking (whether failed, accepted, or canceled)
-
 function logoutBooker() {
     sessionStorage.removeItem("token");
     window.location.replace("/auth");
 }
 
-function getValidTours() {
-    return fetch("http://127.0.0.1:8000/api/getValidTours", {
+function getAvailableTours() {
+    return fetch("/api/tours/available", {
         headers: {
             "Authorization": `Bearer ${sessionStorage.getItem("token")}`
         }
@@ -20,6 +16,116 @@ function getValidTours() {
             return response.json();
         })
 }
+
+
+function displayValidTours() {
+    const allToursPanel = document.getElementById("all-tours-panel");
+    getAvailableTours()
+        .then(result => {
+            const validTours = result.tours;
+            allToursPanel.innerHTML = "";
+            validTours.forEach(tour => {
+                const card = _createTourCard(tour);
+                allToursPanel.appendChild(card);
+            });
+        });
+}
+
+function getMyBookings() {
+    return fetch("/api/me/bookings", {
+        headers: {
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`failed to get current user with status ${response.status}`);
+            }
+            return response.json();
+        })
+}
+
+function _formatBookingDate(rawDate) {
+    const d = new Date(rawDate);
+    return d.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+    });
+}
+
+function displayBookingHistory() {
+    getMyBookings()
+        .then(result => {
+            const bookingHistory = result.bookings;
+            const historyTable = document.getElementById("historyTable");
+            historyTable.innerHTML = "";
+            bookingHistory.forEach(booking => {
+                const row = _createHistRow(booking);
+                historyTable.appendChild(row);
+            })
+        })
+}
+
+function getMyAcceptedBookings() {
+    return fetch("/api/me/bookings?has_status=accepted", {
+        headers: {
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`failed to get current user with status ${response.status}`);
+            }
+            return response.json();
+        })
+}
+
+function displayAcceptedBookings() {
+    const myToursPanel = document.getElementById("my-tours-panel");
+    getMyAcceptedBookings()
+        .then(result => {
+            const myAcceptedBookings = result.bookings;
+            myToursPanel.innerHTML = "";
+            myAcceptedBookings.forEach(booking => {
+                const bookedCard = _createBookedCard(booking);
+                myToursPanel.appendChild(bookedCard);
+            })
+        });
+
+}
+
+function getCurrentUser() {
+    return fetch("/api/me", {
+        headers: {
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`failed to get current user with status ${response.status}`);
+            }
+            return response.json();
+        })
+}
+
+function displayCurrentUser() {
+    getCurrentUser()
+        .then(user => {
+            document.getElementById("account-username").value = user.username;
+            document.getElementById("account-email").value = user.email;
+            document.getElementById("account-number").value = user.number;
+        })
+}
+
+
+displayValidTours();
+displayCurrentUser();
+displayBookingHistory();
+displayAcceptedBookings();
+
+
+// the widget creation functions are put at the bottom
 
 function _createTourCard(tour) {
     const card = document.createElement("div");
@@ -42,7 +148,7 @@ function _createTourCard(tour) {
 
     const route = document.createElement("div");
     route.className = "tour-route";
-    route.textContent = `${tour.source} \u2192 ${tour.destination}`; // \u2192 is the "→" arrow
+    route.textContent = `${tour.source} \u2192 ${tour.destination}`;
     details.appendChild(route);
 
     const meta = document.createElement("div");
@@ -50,7 +156,7 @@ function _createTourCard(tour) {
     const departDate = new Date(tour.start_time).toLocaleDateString("en-US", {
         month: "short", day: "numeric", year: "numeric"
     });
-    meta.textContent = `${tour.day_length} days \u00B7 Departs ${departDate}`; // \u00B7 is "·"
+    meta.textContent = `${tour.day_length} days \u00B7 Departs ${departDate}`;
     details.appendChild(meta);
 
     info.appendChild(details);
@@ -74,43 +180,6 @@ function _createTourCard(tour) {
     card.appendChild(info);
 
     return card;
-}
-
-
-function displayValidTours() {
-    const allToursPanel = document.getElementById("all-tours-panel");
-    getValidTours()
-        .then(result => {
-            const validTours = result.validTours;
-            allToursPanel.innerHTML = "";
-            validTours.forEach(tour => {
-                const card = _createTourCard(tour);
-                allToursPanel.appendChild(card);
-            });
-        });
-}
-
-function getMyBookings() {
-    return fetch("http://127.0.0.1:8000/api/getMyBookings", {
-        headers: {
-            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`failed to get current user with status ${response.status}`);
-            }
-            return response.json();
-        })
-}
-
-function _formatBookingDate(rawDate) {
-    const d = new Date(rawDate);
-    return d.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-    });
 }
 
 function _createHistRow(booking) {
@@ -138,33 +207,6 @@ function _createHistRow(booking) {
     return row;
 }
 
-function displayBookingHistory() {
-    getMyBookings()
-        .then(result => {
-            const bookingHistory = result.myBookings;
-            const historyTable = document.getElementById("historyTable");
-            historyTable.innerHTML = "";
-            bookingHistory.forEach(booking => {
-                const row = _createHistRow(booking);
-                historyTable.appendChild(row);
-            })
-        })
-}
-
-function getMyAcceptedBookings() {
-    return fetch("http://127.0.0.1:8000/api/getMyAcceptedBookings", {
-        headers: {
-            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`failed to get current user with status ${response.status}`);
-            }
-            return response.json();
-        })
-}
-
 function _createBookedCard(booking) {
     const bookingRow = document.createElement("div");
     bookingRow.className = "booking-row";
@@ -189,47 +231,3 @@ function _createBookedCard(booking) {
 
     return bookingRow;
 }
-
-function displayAcceptedBookings() {
-    const myToursPanel = document.getElementById("my-tours-panel");
-    getMyAcceptedBookings()
-        .then(result => {
-            const myAcceptedBookings = result.myAcceptedBookings;
-            myToursPanel.innerHTML = "";
-            myAcceptedBookings.forEach(booking => {
-                const bookedCard = _createBookedCard(booking);
-                myToursPanel.appendChild(bookedCard);
-            })
-        });
-
-}
-
-function getCurrentUser() {
-    return fetch("http://127.0.0.1:8000/api/me", {
-        headers: {
-            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`failed to get current user with status ${response.status}`);
-            }
-            return response.json();
-        })
-}
-
-function displayCurrentUser() {
-    getCurrentUser()
-        .then(user => {
-            document.getElementById("account-username").value = user.username;
-            document.getElementById("account-email").value = user.email;
-            document.getElementById("account-number").value = user.number;
-        })
-}
-
-
-displayValidTours();
-displayCurrentUser();
-displayBookingHistory();
-displayAcceptedBookings();
-// getMyAcceptedBookings();

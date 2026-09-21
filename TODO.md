@@ -1,8 +1,8 @@
-- update `requirements.txt` to cite exact versions
-- fix dangling status indicators in login page upon startup
-- redirect back to login when token expires
-- add functionality to the `Book` button
-- add functionality to the `Cancel Booking` button
-- add functionality to the `Save changes` button
-- add support thread/messages communication
-- add the manager home panel
+1) add functionality to the `Book` button
+1) add functionality to the `Cancel Booking` button
+1) add functionality to the `Save changes` button
+1) add support thread/messages communication
+1) add the manager home panel
+2) fix dangling status indicators in login page upon startup
+2) redirect back to login when token expires
+3) update `requirements.txt` to cite exact versions

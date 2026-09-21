@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Body, Depends, HTTPException
+from fastapi import FastAPI, Body, Depends, HTTPException, Query
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -64,6 +64,8 @@ def createToken(username, role, minutes=30):
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALG)
 
 
+# MPA functions
+
 @app.get("/")
 def rootPage():
     return FileResponse(WEB_DIR / "pages" / "auth.html")
@@ -75,6 +77,9 @@ def loginPage():
 @app.get("/booker-home")
 def bookerHomePage():
     return FileResponse(WEB_DIR / "pages" / "booker-home.html")
+
+# -------------------
+# OPEN APIs (no authentication)
 
 @app.post("/api/login")
 def loginAppUser(
@@ -90,7 +95,11 @@ def loginAppUser(
     if not phash.verify(raw_password, user_record.password):
         raise HTTPException(status_code=401, detail="the password is wrong")
     token = createToken(user_record.username, user_record.role)
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "role": user_record.role
+    }
 
 @app.post("/api/signup", status_code=201)
 def signupAppUser(
@@ -118,6 +127,32 @@ def signupAppUser(
         raise HTTPException(status_code=400, detail="integrity issue")
     return {"username": new_user.username}
 
+@app.get("/api/tours")
+def getAllTours(
+    # current_user: AppUser = Depends(getCurrentUser),
+    # TODO: should I make tour fetching protected?
+    session: Session = Depends(getSession)
+):
+    tours_list = session.execute(select(Tour)).scalars().all()
+    return {"tours": tours_list}
+
+
+@app.get("/api/tours/available")
+def getAvailableTours(
+    # current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    stmt = select(Tour).where(
+        Tour.status == "pending",
+        Tour.start_time > func.SYSDATETIME()
+    )
+    tours_list = session.execute(stmt).scalars().all()
+    return {"tours": tours_list}
+
+# ---------------------
+# PROTECTED APIs
+
+
 @app.get("/api/me")
 def getMe(current_user: AppUser = Depends(getCurrentUser)):
     return {
@@ -126,31 +161,9 @@ def getMe(current_user: AppUser = Depends(getCurrentUser)):
         "number": current_user.number
     }
 
-
-
-@app.post("/api/getAllTours")
-def getAllTours(
-    current_user: AppUser = Depends(getCurrentUser),
-    session: Session = Depends(getSession)
-):
-    tours_list = session.execute(select(Tour)).scalars().all()
-    return {"allTours": tours_list}
-
-
-@app.get("/api/getValidTours")
-def getValidTours(
-    current_user: AppUser = Depends(getCurrentUser),
-    session: Session = Depends(getSession)
-):
-    stmt = select(Tour).where(
-        Tour.status == "pending",
-        Tour.start_time > func.SYSDATETIME()
-    )
-    tours_list = session.execute(stmt).scalars().all()
-    return {"validTours": tours_list}
-
-@app.get("/api/getMyBookings")
+@app.get("/api/me/bookings")
 def getMyBookings(
+    has_status: set[str] | None = Query(default=None),
     current_user: AppUser = Depends(getCurrentUser),
     session: Session = Depends(getSession)
 ):
@@ -159,6 +172,8 @@ def getMyBookings(
         .where(Booking.userID == current_user.userID)
         .options(joinedload(Booking.tour))
     )
+    if has_status:
+        stmt = stmt.where(Booking.status.in_(has_status))
     bookings_list = session.execute(stmt).scalars().all()
     bookings_list = [
         {
@@ -171,31 +186,4 @@ def getMyBookings(
             "tour_name": b.tour.tour_name
         } for b in bookings_list
     ]
-    return {"myBookings": bookings_list}
-
-@app.get("/api/getMyAcceptedBookings")
-def getMyAcceptedBookings(
-    current_user: AppUser = Depends(getCurrentUser),
-    session: Session = Depends(getSession)
-):
-    stmt = (
-        select(Booking)
-        .where(
-            Booking.userID == current_user.userID,
-            Booking.status == "accepted"
-        )
-        .options(joinedload(Booking.tour))
-    )
-    bookings_list = session.execute(stmt).scalars().all()
-    bookings_list = [
-        {
-            "bookingID": b.bookingID,
-            "tourID": b.tourID,
-            "userID": b.userID,
-            "booking_date": b.booking_date,
-            "status": b.status,
-            "num_people": b.num_people,
-            "tour_name": b.tour.tour_name
-        } for b in bookings_list
-    ]
-    return {"myAcceptedBookings": bookings_list}
+    return {"bookings": bookings_list}
