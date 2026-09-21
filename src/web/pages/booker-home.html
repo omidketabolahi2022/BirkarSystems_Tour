@@ -37,28 +37,7 @@
       <div class="panel" id="all-tours-panel"></div>
 
       <!-- ============== MY TOURS ============== -->
-      <div class="panel" id="my-tours-panel">
-
-        <!-- Only bookings with status "accepted" belong here.
-             These are placeholders, same as above. -->
-
-        <div class="booking-row">
-          <div>
-            <div class="booking-title">Istanbul Highlights</div>
-            <div class="booking-meta">2 people &middot; Departs Oct 12, 2026</div>
-          </div>
-          <button type="button" class="btn btn-outline-danger">Cancel booking</button>
-        </div>
-
-        <div class="booking-row">
-          <div>
-            <div class="booking-title">Caspian Coast Getaway</div>
-            <div class="booking-meta">1 person &middot; Departs Oct 20, 2026</div>
-          </div>
-          <button type="button" class="btn btn-outline-danger">Cancel booking</button>
-        </div>
-
-      </div>
+      <div class="panel" id="my-tours-panel"></div>
 
       <!-- ============== MY ACCOUNT ============== -->
       <div class="panel" id="account-panel">
@@ -68,17 +47,17 @@
         <form id="account-form">
           <div class="field">
             <label for="account-username">Username</label>
-            <input type="text" id="account-username" disabled name="username" value="BookerOmid">
+            <input type="text" id="account-username" disabled name="username">
           </div>
 
           <div class="field">
             <label for="account-email">Email</label>
-            <input type="email" id="account-email" name="email" value="omid@example.com">
+            <input type="email" id="account-email" name="email">
           </div>
 
           <div class="field">
             <label for="account-number">Phone number</label>
-            <input type="tel" id="account-number" name="number" value="09123456789">
+            <input type="tel" id="account-number" name="number">
           </div>
 
           <div class="account-actions">
@@ -109,6 +88,36 @@
 
       </div>
 
+    </div>
+  </div>
+
+  <!-- Booking modal - hidden by default, one instance reused for whichever tour is clicked -->
+  <div class="modal-overlay" id="booking-modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Book tour</div>
+      </div>
+
+      <div class="modal-body">
+        <div class="field">
+          <label for="modal-username">Booking as</label>
+          <input type="text" id="modal-username" disabled>
+        </div>
+
+        <div class="field">
+          <label for="modal-num-people">Number of people</label>
+          <input type="number" id="modal-num-people" min="1" value="1">
+        </div>
+
+        <div class="modal-total">
+          Total: <span id="modal-total-price">$0.00</span>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-neutral" id="modal-cancel-btn">Cancel</button>
+        <button type="button" class="btn btn-primary" id="modal-submit-btn">Submit booking</button>
+      </div>
     </div>
   </div>
 

@@ -288,6 +288,7 @@ class Booking(Base):
         CheckConstraint(
             "status IN ('accepted', 'failed', 'canceled')"
         ),
+        {"implicit_returning": False}
     )
 
 

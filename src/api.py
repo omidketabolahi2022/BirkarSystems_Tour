@@ -187,3 +187,36 @@ def getMyBookings(
         } for b in bookings_list
     ]
     return {"bookings": bookings_list}
+
+@app.post("/api/me/bookings")
+def createBooking(
+    details: dict = Body(),
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    tourID = details["tourID"]
+    userID = current_user.userID
+    status = "accepted"
+    num_people = details["num_people"]
+    booking_record = Booking(
+        tourID=tourID,
+        userID=userID,
+        # booking date will be provided by the DBMS itself
+        status=status,
+        num_people=num_people
+    )
+    try:
+        session.add(booking_record)
+        session.commit()
+        session.refresh(booking_record)
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(status_code=400, detail="integrity issue")
+    return {
+        "bookingID": booking_record.bookingID,
+        "tourID": booking_record.tourID,
+        "userID": booking_record.userID,
+        "booking_date": booking_record.booking_date,
+        "status": booking_record.status,
+        "num_people": booking_record.num_people
+    }

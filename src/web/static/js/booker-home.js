@@ -1,5 +1,10 @@
+let currentUser = null;
+let bookingModalTourID = null;
+let bookingModalTourPrice = 0;
+
 function logoutBooker() {
     sessionStorage.removeItem("token");
+    currentUser = null;
     window.location.replace("/auth");
 }
 
@@ -17,15 +22,18 @@ function getAvailableTours() {
         })
 }
 
-
 function displayValidTours() {
     const allToursPanel = document.getElementById("all-tours-panel");
-    getAvailableTours()
-        .then(result => {
-            const validTours = result.tours;
+
+    Promise.all([getAvailableTours(), getMyAcceptedBookings()])
+        .then(([toursResult, bookingsResult]) => {
+            const bookedTourIDs = new Set(
+                bookingsResult.bookings.map(b => b.tourID)
+            );
+
             allToursPanel.innerHTML = "";
-            validTours.forEach(tour => {
-                const card = _createTourCard(tour);
+            toursResult.tours.forEach(tour => {
+                const card = _createTourCard(tour, bookedTourIDs.has(tour.tourID));
                 allToursPanel.appendChild(card);
             });
         });
@@ -112,6 +120,7 @@ function getCurrentUser() {
 function displayCurrentUser() {
     getCurrentUser()
         .then(user => {
+            currentUser = user;
             document.getElementById("account-username").value = user.username;
             document.getElementById("account-email").value = user.email;
             document.getElementById("account-number").value = user.number;
@@ -127,7 +136,7 @@ displayAcceptedBookings();
 
 // the widget creation functions are put at the bottom
 
-function _createTourCard(tour) {
+function _createTourCard(tour, alreadyBooked) {
     const card = document.createElement("div");
     card.className = "tour-card";
 
@@ -169,13 +178,29 @@ function _createTourCard(tour) {
     price.textContent = `$${Number(tour.price).toFixed(2)}`;
     footer.appendChild(price);
 
+    const actionGroup = document.createElement("div");
+    actionGroup.className = "tour-action-group";
+
     const bookBtn = document.createElement("button");
     bookBtn.type = "button";
     bookBtn.className = "btn btn-primary";
     bookBtn.textContent = "Book";
-    bookBtn.addEventListener("click", () => bookTour(tour.tourID));
-    footer.appendChild(bookBtn);
+    bookBtn.dataset.tourId = tour.tourID;
+    bookBtn.addEventListener("click", () => openBookingModal(tour));
+    actionGroup.appendChild(bookBtn);
 
+    const bookedLabel = document.createElement("span");
+    bookedLabel.className = "already-booked-label";
+    bookedLabel.textContent = "Already booked";
+    bookedLabel.style.display = "none";
+    actionGroup.appendChild(bookedLabel);
+
+    if (alreadyBooked) {
+        bookBtn.disabled = true;
+        bookedLabel.style.display = "inline";
+    }
+
+    footer.appendChild(actionGroup);
     info.appendChild(footer);
     card.appendChild(info);
 
@@ -231,3 +256,63 @@ function _createBookedCard(booking) {
 
     return bookingRow;
 }
+
+function openBookingModal(tour) {
+    bookingModalTourID = tour.tourID;
+    bookingModalTourPrice = Number(tour.price);
+
+    document.getElementById("modal-username").value = currentUser.username || "";
+    document.getElementById("modal-num-people").value = 1;
+    updateModalTotal();
+
+    document.getElementById("booking-modal-overlay").classList.add("is-open");
+}
+
+function closeBookingModal() {
+    document.getElementById("booking-modal-overlay").classList.remove("is-open");
+    bookingModalTourID = null;
+}
+
+function updateModalTotal() {
+    const numPeople = Number(document.getElementById("modal-num-people").value) || 0;
+    const total = numPeople * bookingModalTourPrice;
+    document.getElementById("modal-total-price").textContent = `$${total.toFixed(2)}`;
+}
+
+function submitBooking(tourID, num_people) {
+    return fetch("/api/me/bookings", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+        },
+        body: JSON.stringify({ tourID,  num_people })
+    }).then(response => {
+        if (!response.ok) {
+            throw new Error(`booking failed with status ${response.status}`);
+        }
+        return response.json();
+    });
+}
+
+function markTourAsBooked(tourID) {
+    const bookBtn = document.querySelector(`button[data-tour-id="${tourID}"]`);
+    if (!bookBtn) return;
+    bookBtn.disabled = true;
+    bookBtn.parentElement.querySelector(".already-booked-label").style.display = "inline";
+}
+
+document.getElementById("modal-num-people").addEventListener("input", updateModalTotal);
+document.getElementById("modal-cancel-btn").addEventListener("click", closeBookingModal);
+
+document.getElementById("modal-submit-btn").addEventListener("click", function () {
+    const numPeople = Number(document.getElementById("modal-num-people").value);
+    if (!numPeople || numPeople < 1) return;
+
+    submitBooking(bookingModalTourID, numPeople)
+        .then(() => {
+            markTourAsBooked(bookingModalTourID);
+            closeBookingModal();
+        })
+        .catch(err => alert(err.message));
+});

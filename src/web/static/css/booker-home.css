@@ -277,6 +277,11 @@
   box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.15);
 }
 
+.field input:disabled {
+  background-color: var(--color-bg);
+  color: var(--color-text-muted);
+}
+
 .account-actions {
   margin-top: 1.5rem;
 }
@@ -315,6 +320,77 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+}
+
+/* ============================================================
+   BOOKING MODAL
+   ============================================================ */
+.modal-overlay {
+  display: none; /* toggled via .is-open in JS */
+  position: fixed;
+  inset: 0;
+  background-color: rgba(32, 38, 50, 0.45);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-overlay.is-open {
+  display: flex;
+}
+
+.modal {
+  background-color: var(--color-card);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 360px;
+  margin: 1rem;
+  padding: 1.5rem;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.modal-total {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.modal-total span {
+  color: var(--color-primary);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+/* ============================================================
+   "Already booked" state on a tour card
+   ============================================================ */
+.tour-action-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.already-booked-label {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none; /* also stops the hover-color rule from firing on a disabled button */
 }
 
 /* ============================================================
