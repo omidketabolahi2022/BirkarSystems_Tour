@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, func
 from pwdlib import PasswordHash
@@ -154,7 +154,11 @@ def getMyBookings(
     current_user: AppUser = Depends(getCurrentUser),
     session: Session = Depends(getSession)
 ):
-    stmt = select(Booking).where(Booking.userID == current_user.userID)
+    stmt = (
+        select(Booking)
+        .where(Booking.userID == current_user.userID)
+        .options(joinedload(Booking.tour))
+    )
     bookings_list = session.execute(stmt).scalars().all()
     bookings_list = [
         {
@@ -174,9 +178,24 @@ def getMyAcceptedBookings(
     current_user: AppUser = Depends(getCurrentUser),
     session: Session = Depends(getSession)
 ):
-    stmt = select(Booking).where(
-        Booking.userID == current_user.userID,
-        Booking.status == "accepted"
+    stmt = (
+        select(Booking)
+        .where(
+            Booking.userID == current_user.userID,
+            Booking.status == "accepted"
+        )
+        .options(joinedload(Booking.tour))
     )
     bookings_list = session.execute(stmt).scalars().all()
+    bookings_list = [
+        {
+            "bookingID": b.bookingID,
+            "tourID": b.tourID,
+            "userID": b.userID,
+            "booking_date": b.booking_date,
+            "status": b.status,
+            "num_people": b.num_people,
+            "tour_name": b.tour.tour_name
+        } for b in bookings_list
+    ]
     return {"myAcceptedBookings": bookings_list}

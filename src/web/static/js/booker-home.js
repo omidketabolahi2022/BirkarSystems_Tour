@@ -115,12 +115,26 @@ function _formatBookingDate(rawDate) {
 
 function _createHistRow(booking) {
     const row = document.createElement("tr");
-    row.innerHTML = `
-        <td>${booking.tour_name}</td>
-        <td>${_formatBookingDate(booking.booking_date)}</td>
-        <td>${booking.num_people}</td>
-        <td><span class="status-badge status-${booking.status}">${booking.status}</span></td>
-    `;
+
+    const tourCell = document.createElement("td");
+    tourCell.textContent = booking.tour_name;
+    row.appendChild(tourCell);
+
+    const dateCell = document.createElement("td");
+    dateCell.textContent = _formatBookingDate(booking.booking_date);
+    row.appendChild(dateCell);
+
+    const peopleCell = document.createElement("td");
+    peopleCell.textContent = booking.num_people;
+    row.appendChild(peopleCell);
+
+    const statusCell = document.createElement("td");
+    const badge = document.createElement("span");
+    badge.className = `status-badge status-${booking.status}`;
+    badge.textContent = booking.status;
+    statusCell.appendChild(badge);
+    row.appendChild(statusCell);
+
     return row;
 }
 
@@ -151,6 +165,45 @@ function getMyAcceptedBookings() {
         })
 }
 
+function _createBookedCard(booking) {
+    const bookingRow = document.createElement("div");
+    bookingRow.className = "booking-row";
+
+    const bookingInfo = document.createElement("div");
+    const bookingTitle = document.createElement("div");
+    bookingTitle.className = "booking-title";
+    bookingTitle.textContent = booking.tour_name;
+    bookingInfo.appendChild(bookingTitle);
+
+    const bookingDetails = document.createElement("div");
+    bookingDetails.className = "booking-meta";
+    bookingDetails.textContent = `${booking.num_people} people \u00B7 Departs ${_formatBookingDate(booking.booking_date)}`;
+    bookingInfo.appendChild(bookingDetails);
+
+    bookingRow.appendChild(bookingInfo);
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "btn btn-outline-danger";
+    cancelBtn.textContent = "Cancel booking";
+    bookingRow.appendChild(cancelBtn);
+
+    return bookingRow;
+}
+
+function displayAcceptedBookings() {
+    const myToursPanel = document.getElementById("my-tours-panel");
+    getMyAcceptedBookings()
+        .then(result => {
+            const myAcceptedBookings = result.myAcceptedBookings;
+            myToursPanel.innerHTML = "";
+            myAcceptedBookings.forEach(booking => {
+                const bookedCard = _createBookedCard(booking);
+                myToursPanel.appendChild(bookedCard);
+            })
+        });
+
+}
+
 function getCurrentUser() {
     return fetch("http://127.0.0.1:8000/api/me", {
         headers: {
@@ -178,4 +231,5 @@ function displayCurrentUser() {
 displayValidTours();
 displayCurrentUser();
 displayBookingHistory();
+displayAcceptedBookings();
 // getMyAcceptedBookings();
