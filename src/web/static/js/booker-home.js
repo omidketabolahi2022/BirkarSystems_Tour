@@ -228,6 +228,7 @@ function _createTourCard(tour, alreadyBooked) {
 
 function _createHistRow(booking) {
     const row = document.createElement("tr");
+    row.dataset.bookingId = booking.bookingID;
 
     const tourCell = document.createElement("td");
     tourCell.textContent = booking.tour_name;
@@ -329,11 +330,20 @@ function reenableBookButton(tourID) {
     bookBtn.parentElement.querySelector(".already-booked-label").style.display = "none";
 }
 
+function updateHistoryRowStatus(bookingID, newStatus) {
+    const row = document.querySelector(`#historyTable tr[data-booking-id="${bookingID}"]`);
+    if (!row) return;
+    const badge = row.querySelector(".status-badge");
+    badge.textContent = newStatus;
+    badge.className = `status-badge status-${newStatus}`;
+}
+
 function cancelSelectedBooking(booking, bookingRow) {
     updateBooking(booking.bookingID, {status: "canceled"})
         .then(result => {
             bookingRow.remove();
             reenableBookButton(booking.tourID);
+            updateHistoryRowStatus(booking.bookingID, "canceled");
             alert("Booking canceled successfully");
         })
         .catch(err => alert(err.message));
@@ -353,6 +363,8 @@ document.getElementById("modal-submit-btn").addEventListener("click", function (
             const bookedCard = _createBookedCard(booking);
             myToursPanel.appendChild(bookedCard);
             closeBookingModal();
+            const historyTable = document.getElementById("historyTable");
+            historyTable.appendChild(_createHistRow(booking));
         })
         .catch(err => alert(err.message));
 });
