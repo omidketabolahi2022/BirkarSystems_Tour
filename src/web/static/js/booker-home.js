@@ -139,7 +139,7 @@ function updateCurrentUser(updates) {
 }
 
 function submitUserChanges() {
-    const newEmail = document.getElementById("account-email").value.trim();
+    const newEmail = document.getElementById("account-email").value.trim() || null;
     const newNumber = document.getElementById("account-number").value.trim();
     const updates = {};
     if (newEmail !== currentUser.email)
@@ -153,7 +153,7 @@ function submitUserChanges() {
     updateCurrentUser(updates)
         .then(user => {
             currentUser = user;
-            alert("Profile updates");
+            alert("Profile updated");
         })
         .catch(err => alert(err.message));
 }
@@ -163,7 +163,7 @@ function displayCurrentUser() {
         .then(user => {
             currentUser = user;
             document.getElementById("account-username").value = user.username;
-            document.getElementById("account-email").value = user.email;
+            document.getElementById("account-email").value = user.email || '';
             document.getElementById("account-number").value = user.number;
         })
 }

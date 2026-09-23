@@ -1,5 +1,23 @@
+function sendRequest(url, data) {
+    return fetch(url, data)
+        .then(response => {
+            if (!response.ok) {
+                const err = new Error(`failed with status ${response.status}`);
+                err.status = response.status;
+                return response.json()
+                    .catch(() => ({}))
+                    .then(body => {
+                        if (body.detail)
+                            err.message = body.detail;
+                        throw err;
+                    }); 
+            }
+            return response.json();
+        })
+}
+
 function signupBooker(username, password, email, number, role = "booker") {
-    return fetch("/api/signup",
+    return sendRequest("/api/signup",
     {
         method: "POST",
         headers: {
@@ -7,13 +25,7 @@ function signupBooker(username, password, email, number, role = "booker") {
         },
         body: JSON.stringify({username, password, email, number, role})
     }
-    )
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`new user submission failed with status ${response.status}`);
-            }
-            return response.json();
-        });
+    );
 }
 
 function confirmSignup() {
@@ -50,7 +62,7 @@ function loginBooker(username, password) {
     const formData = new URLSearchParams();
     formData.append("username", username);
     formData.append("password", password);
-    return fetch("/api/login",
+    return sendRequest("/api/login",
         {
             method: "POST",
             headers: {
@@ -58,13 +70,7 @@ function loginBooker(username, password) {
             },
             body: formData
         }
-    )
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`failed to authenticate user '${username}'`);
-            }
-            return response.json();
-        });
+    );
 }
 
 function confirmLogin() {

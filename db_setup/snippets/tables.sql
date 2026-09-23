@@ -40,7 +40,7 @@ CREATE TABLE AppUser(
     userID INT IDENTITY(1, 1) PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password NVARCHAR(255) NOT NULL,
-    email VARCHAR(254) UNIQUE,
+    email VARCHAR(254),
     number VARCHAR(11) NOT NULL,
     role VARCHAR(7) NOT NULL,
 

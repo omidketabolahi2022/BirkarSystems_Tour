@@ -93,6 +93,7 @@ def loginAppUser(
 ):
     username = form_data.username.strip()
     raw_password = form_data.password.strip()
+    print(username, raw_password)
     stmt = select(AppUser).where(AppUser.username == username)
     user_record = session.execute(stmt).scalar_one_or_none()
     if not user_record:
@@ -114,6 +115,8 @@ def signupAppUser(
     username = details["username"].strip()
     raw_password = details["password"].strip()
     email = details.get("email").strip()
+    if email == '':
+        email = None
     number = details["number"].strip()
     role = details.get("role", "booker").strip()
     # TODO: this is a security risk as creating an admin role ('manager') is accessible to anyone

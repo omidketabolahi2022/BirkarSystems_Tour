@@ -1,6 +1,10 @@
 USE TourDB;
 GO
 
+CREATE UNIQUE INDEX UX_AppUser_email
+    ON AppUser(email)
+    WHERE email IS NOT NULL;
+
 CREATE UNIQUE INDEX UX_TourImg_Banner
     ON TourImg(tourID)
     WHERE label = 'banner';

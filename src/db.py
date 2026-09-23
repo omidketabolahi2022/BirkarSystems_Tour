@@ -183,7 +183,6 @@ class AppUser(Base):
     email: Mapped[str | None] = mapped_column(
         VARCHAR(254),
         nullable=True,
-        unique=True,
     )
 
     number: Mapped[str] = mapped_column(
