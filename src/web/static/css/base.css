@@ -24,6 +24,7 @@
   --color-error-border: #F3C6C9;
 
   --color-neutral-bg: #EEF0F3;  /* used for "canceled" badges, subtle fills */
+  --color-primary-bg: #E8EFFD;
 
   --radius: 8px;
   --spacing: 1rem;

@@ -1,0 +1,390 @@
+/* ============================================================
+   SHARED COMPONENTS
+   Link this AFTER base.css and BEFORE the page's own stylesheet.
+
+   Rule of thumb for what belongs here vs. in a page's own CSS:
+   - Anything selected by a plain class (.tour-card, .btn, ...)
+     is safe here, since it looks the same on every page.
+   - Anything selected by a specific #id (like the tab-switching
+     rules that reference #tab-all-tours) CANNOT live here,
+     because different pages have different tab/panel ids.
+     Each page keeps its own small block of those.
+   ============================================================ */
+
+/* ============================================================
+   PAGE LAYOUT
+   ============================================================ */
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.brand {
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.page-header .brand {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* ============================================================
+   TABS - generic look only.
+   Each page still needs its own block of
+   #tab-X:checked ~ .tabs label[for="tab-X"] { ... } and
+   #tab-X:checked ~ .panels #Y-panel { display: block; }
+   rules, since the actual ids differ per page.
+   ============================================================ */
+.tab-input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 1.5rem;
+}
+
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 0.75rem 0;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.panel {
+  display: none;
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-block;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+}
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.btn-outline-danger {
+  background-color: transparent;
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+.btn-outline-danger:hover {
+  background-color: var(--color-error);
+  color: #FFFFFF;
+}
+
+.btn-outline-neutral {
+  background-color: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+.btn-outline-neutral:hover {
+  background-color: var(--color-neutral-bg);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ============================================================
+   TOUR CARD
+   Used by the booker's "All tours" (with a Book button) and the
+   manager's "All tours" (with Edit / Cancel buttons instead).
+   ============================================================ */
+.tour-card {
+  display: flex;
+  gap: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: var(--color-card);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tour-banner {
+  width: 110px;
+  height: 110px;
+  flex-shrink: 0;
+  border-radius: var(--radius);
+  background-color: #DCE6FB;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tour-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+
+.tour-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tour-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.tour-route {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 0.25rem;
+}
+
+.tour-meta {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.tour-info-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+}
+
+.tour-price {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.tour-action-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ============================================================
+   GENERIC LIST ROW
+   Originally the booker's "My tours" booking row - reused as-is
+   for the manager's support-thread list too, since both are
+   just "a horizontal row with some text and an action button".
+   ============================================================ */
+.booking-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: var(--color-card);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.booking-title {
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+.booking-meta {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+/* ============================================================
+   STATUS BADGES
+   Booking statuses (accepted/failed/canceled), Tour statuses
+   (pending/canceled/passed), and SupportThread statuses
+   (open/closed) all render through this same component - the
+   class name is always "status-" + the literal status string.
+   ============================================================ */
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-accepted,
+.status-pending,
+.status-open {
+  background-color: var(--color-primary-bg, #E8EFFD);
+  color: var(--color-primary);
+}
+
+.status-failed {
+  background-color: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.status-canceled,
+.status-passed,
+.status-closed {
+  background-color: var(--color-neutral-bg);
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+   FORM FIELDS
+   Used by the booker's account form, the manager's create-tour
+   form, the booking/edit-tour modals, and the thread reply box.
+   ============================================================ */
+.field {
+  margin-bottom: 1.1rem;
+  max-width: 360px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.15);
+}
+
+.field input:disabled {
+  background-color: var(--color-bg);
+  color: var(--color-text-muted);
+}
+
+/* ============================================================
+   MODAL
+   One shared overlay+box structure - used for the booker's
+   booking modal, the manager's edit-tour modal, and the
+   manager's thread-detail modal. Only the content inside
+   differs per use.
+   ============================================================ */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background-color: rgba(32, 38, 50, 0.45);
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.modal-overlay.is-open {
+  display: flex;
+}
+
+.modal {
+  background-color: var(--color-card);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 360px;
+  padding: 1.5rem;
+}
+
+.modal.modal-wide {
+  max-width: 480px;
+}
+
+.modal-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.modal-total {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.modal-total span {
+  color: var(--color-primary);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+/* ============================================================
+   SMALL SCREENS
+   ============================================================ */
+@media (max-width: 560px) {
+  .tour-card {
+    flex-direction: column;
+  }
+  .tour-banner {
+    width: 100%;
+    height: 140px;
+  }
+  .booking-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

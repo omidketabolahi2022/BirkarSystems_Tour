@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- <script>
+  if (!sessionStorage.getItem("token")) {
+    window.location.replace("/auth");
+  }
+</script> -->
+<title>Tour Manager - Manager Home</title>
+<link rel="stylesheet" href="/static/css/base.css">
+<link rel="stylesheet" href="/static/css/home.css">
+<link rel="stylesheet" href="/static/css/manager-home.css">
+</head>
+<body>
+
+  <div class="container">
+
+    <div class="page-header">
+      <div class="brand">Tour Manager</div>
+      <button type="button" class="btn btn-outline-neutral" onclick="logoutBooker()">Log out</button>
+    </div>
+
+    <!-- These three radio buttons track which tab is active -
+         same technique as the booker page, just with this
+         page's own tab/panel ids. -->
+    <input type="radio" name="tab" id="tab-all-tours" class="tab-input" checked>
+    <input type="radio" name="tab" id="tab-create-tour" class="tab-input">
+    <input type="radio" name="tab" id="tab-support-threads" class="tab-input">
+
+    <div class="tabs">
+      <label for="tab-all-tours" class="tab">All tours</label>
+      <label for="tab-create-tour" class="tab">Create tour</label>
+      <label for="tab-support-threads" class="tab">Support threads</label>
+    </div>
+
+    <div class="panels">
+
+      <!-- ============== ALL TOURS (manage) ============== -->
+      <div class="panel" id="all-tours-panel"></div>
+
+      <!-- ============== CREATE TOUR ============== -->
+      <div class="panel" id="create-tour-panel">
+        <div class="section-title">Create a new tour</div>
+
+        <form id="create-tour-form">
+          <div class="field">
+            <label for="create-tour-name">Tour name</label>
+            <input type="text" id="create-tour-name" name="tour_name" required>
+          </div>
+
+          <div class="field">
+            <label for="create-source">Source</label>
+            <input type="text" id="create-source" name="source" required>
+          </div>
+
+          <div class="field">
+            <label for="create-destination">Destination</label>
+            <input type="text" id="create-destination" name="destination" required>
+          </div>
+
+          <div class="field">
+            <label for="create-start-time">Start time</label>
+            <input type="datetime-local" id="create-start-time" name="start_time" required>
+          </div>
+
+          <div class="field">
+            <label for="create-day-length">Length (days)</label>
+            <input type="number" id="create-day-length" name="day_length" min="1" required>
+          </div>
+
+          <div class="field">
+            <label for="create-capacity">Capacity</label>
+            <input type="number" id="create-capacity" name="capacity" min="1" required>
+          </div>
+
+          <div class="field">
+            <label for="create-price">Price ($)</label>
+            <input type="number" id="create-price" name="price" min="0.01" step="0.01" required>
+          </div>
+
+          <div class="field">
+            <label for="create-description">Description</label>
+            <textarea id="create-description" name="description"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Create tour</button>
+        </form>
+      </div>
+
+      <!-- ============== SUPPORT THREADS ============== -->
+      <div class="panel" id="threads-panel">
+        <div class="section-title">Support threads</div>
+        <div id="threads-list"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Edit tour modal - one instance, reused for whichever tour
+       card's Edit button was clicked. -->
+  <div class="modal-overlay" id="edit-tour-modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Edit tour</div>
+      </div>
+
+      <div class="modal-body">
+        <div class="field">
+          <label for="edit-tour-name">Tour name</label>
+          <input type="text" id="edit-tour-name">
+        </div>
+
+        <div class="field">
+          <label for="edit-start-time">Start time</label>
+          <input type="datetime-local" id="edit-start-time">
+        </div>
+
+        <div class="field">
+          <label for="edit-day-length">Length (days)</label>
+          <input type="number" id="edit-day-length" min="1">
+        </div>
+
+        <div class="field">
+          <label for="edit-capacity">Capacity</label>
+          <input type="number" id="edit-capacity" min="1">
+        </div>
+
+        <div class="field">
+          <label for="edit-price">Price ($)</label>
+          <input type="number" id="edit-price" min="0.01" step="0.01">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-neutral" id="edit-tour-cancel-btn">Cancel</button>
+        <button type="button" class="btn btn-primary" id="edit-tour-submit-btn">Save changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Thread detail modal - one instance, reused for whichever
+       thread's "View" button was clicked. -->
+  <div class="modal-overlay" id="thread-modal-overlay">
+    <div class="modal modal-wide">
+      <div class="modal-header">
+        <div class="modal-title" id="thread-modal-title">Support thread</div>
+      </div>
+
+      <div class="modal-body">
+        <div class="thread-messages" id="thread-messages"></div>
+
+        <div class="field">
+          <label for="thread-reply-text">Reply</label>
+          <textarea id="thread-reply-text" placeholder="Type a reply..."></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-danger" id="thread-close-btn">Close thread</button>
+        <button type="button" class="btn btn-outline-neutral" id="thread-done-btn">Done</button>
+        <button type="button" class="btn btn-primary" id="thread-reply-btn">Send reply</button>
+      </div>
+    </div>
+  </div>
+
+<script src="/static/js/manager-home.js"></script>
+</body>
+</html>

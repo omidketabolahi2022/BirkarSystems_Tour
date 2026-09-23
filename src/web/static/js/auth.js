@@ -79,8 +79,10 @@ function confirmLogin() {
             loginStatus.classList.remove("alert-error");
             loginStatus.classList.add("alert-success");
             loginStatus.hidden = false;
-            // TODO: how do we handle the transition if the logged in user is a manager not a booker?
-            window.location.href = "/booker-home";
+            if (result.role === "manager")
+                window.location.href = "/manager-home";
+            else
+                window.location.href = "/booker-home";
         })
         .catch(err => {
             loginStatus.textContent = `Login failed: ${err.message}`;

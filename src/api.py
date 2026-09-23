@@ -79,6 +79,10 @@ def loginPage():
 def bookerHomePage():
     return FileResponse(WEB_DIR / "pages" / "booker-home.html")
 
+@app.get("/manager-home")
+def managerHomePage():
+    return FileResponse(WEB_DIR / "pages" / "manager-home.html")
+
 # -------------------
 # OPEN APIs (no authentication)
 

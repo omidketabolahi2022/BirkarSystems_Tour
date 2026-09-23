@@ -1,0 +1,65 @@
+/* ============================================================
+   Requires base.css AND shared.css to be linked before this file.
+   ============================================================ */
+
+/* ============================================================
+   TAB WIRING - specific to this page's own tab/panel ids.
+   ============================================================ */
+#tab-all-tours:checked ~ .tabs label[for="tab-all-tours"],
+#tab-create-tour:checked ~ .tabs label[for="tab-create-tour"],
+#tab-support-threads:checked ~ .tabs label[for="tab-support-threads"] {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+#tab-all-tours:checked ~ .panels #all-tours-panel,
+#tab-create-tour:checked ~ .panels #create-tour-panel,
+#tab-support-threads:checked ~ .panels #threads-panel {
+  display: block;
+}
+
+/* ============================================================
+   Status badge placed inline next to the tour name.
+   ============================================================ */
+.tour-name .status-badge {
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+/* ============================================================
+   CREATE TOUR form
+   ============================================================ */
+#create-tour-form .field {
+  max-width: 480px;
+}
+
+/* ============================================================
+   SUPPORT THREADS
+   ============================================================ */
+.thread-messages {
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.thread-message {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.thread-message:last-child {
+  border-bottom: none;
+}
+
+.thread-message-meta {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.15rem;
+}
+
+.thread-message-content {
+  font-size: 0.9rem;
+}
