@@ -53,6 +53,25 @@ function getMyBookings() {
         })
 }
 
+function updateBooking(bookingID, updates) {
+    return fetch(`/api/me/bookings/${bookingID}`,
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+            },
+            body: JSON.stringify(updates)
+        }
+    )
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`failed to get current user with status ${response.status}`);
+            }
+            return response.json();
+        })
+}
+
 function _formatBookingDate(rawDate) {
     const d = new Date(rawDate);
     return d.toLocaleDateString("en-US", {
@@ -252,6 +271,7 @@ function _createBookedCard(booking) {
     cancelBtn.type = "button";
     cancelBtn.className = "btn btn-outline-danger";
     cancelBtn.textContent = "Cancel booking";
+    cancelBtn.addEventListener("click", () => cancelSelectedBooking(booking, bookingRow));
     bookingRow.appendChild(cancelBtn);
 
     return bookingRow;
@@ -300,6 +320,23 @@ function markTourAsBooked(tourID) {
     if (!bookBtn) return;
     bookBtn.disabled = true;
     bookBtn.parentElement.querySelector(".already-booked-label").style.display = "inline";
+}
+
+function reenableBookButton(tourID) {
+    const bookBtn = document.querySelector(`button[data-tour-id="${tourID}"]`);
+    if (!bookBtn) return; // tour might not be in the currently-rendered list at all
+    bookBtn.disabled = false;
+    bookBtn.parentElement.querySelector(".already-booked-label").style.display = "none";
+}
+
+function cancelSelectedBooking(booking, bookingRow) {
+    updateBooking(booking.bookingID, {status: "canceled"})
+        .then(result => {
+            bookingRow.remove();
+            reenableBookButton(booking.tourID);
+            alert("Booking canceled successfully");
+        })
+        .catch(err => alert(err.message));
 }
 
 document.getElementById("modal-num-people").addEventListener("input", updateModalTotal);

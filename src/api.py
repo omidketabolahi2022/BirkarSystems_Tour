@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, func
@@ -212,6 +213,36 @@ def createBooking(
     except IntegrityError:
         session.rollback()
         raise HTTPException(status_code=400, detail="integrity issue")
+    return {
+        "bookingID": booking_record.bookingID,
+        "tourID": booking_record.tourID,
+        "tour_name": booking_record.tour.tour_name,
+        "userID": booking_record.userID,
+        "booking_date": booking_record.booking_date,
+        "status": booking_record.status,
+        "num_people": booking_record.num_people
+    }
+
+class BookingUpdate(BaseModel):
+    status: str | None = None
+    num_people: int | None = None
+
+@app.patch("/api/me/bookings/{bookingID}")
+def updateBooking(
+    bookingID: int,
+    updates: BookingUpdate,
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    print(f"Received: {bookingID}")
+    booking_record = session.get(Booking, bookingID)
+    if not booking_record:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    if booking_record.userID != current_user.userID:
+        raise HTTPException(status_code=403, detail="The booking does not belong to you")
+    for field, value in updates.model_dump(exclude_unset=True).items():
+        setattr(booking_record, field, value)
+    session.commit()
     return {
         "bookingID": booking_record.bookingID,
         "tourID": booking_record.tourID,
