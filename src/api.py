@@ -162,6 +162,26 @@ def getMe(current_user: AppUser = Depends(getCurrentUser)):
         "number": current_user.number
     }
 
+class UserUpdate(BaseModel):
+    email: str | None = None
+    number: str | None = None
+
+@app.patch("/api/me")
+def updateMe(
+    updates: UserUpdate,
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    for field, value in updates.model_dump(exclude_unset=True).items():
+        setattr(current_user, field, value)
+    session.add(current_user)
+    session.commit()
+    return {
+        "username": current_user.username,
+        "email": current_user.email,
+        "number": current_user.number
+    }
+
 @app.get("/api/me/bookings")
 def getMyBookings(
     has_status: set[str] | None = Query(default=None),

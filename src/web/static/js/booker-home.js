@@ -2,6 +2,10 @@ let currentUser = null;
 let bookingModalTourID = null;
 let bookingModalTourPrice = 0;
 
+/* TODO: maybe instead of manually updating the 'All tours', 'My tours' and transaction history
+section I could just refersh them through the DB?
+*/
+
 function logoutBooker() {
     sessionStorage.removeItem("token");
     currentUser = null;
@@ -134,6 +138,45 @@ function getCurrentUser() {
             }
             return response.json();
         })
+}
+
+function updateCurrentUser(updates) {
+    return fetch("/api/me",
+        {
+            method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+            },
+            body: JSON.stringify(updates)
+        }
+    )
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`failed to get current user with status ${response.status}`);
+            }
+            return response.json();
+        })
+}
+
+function submitUserChanges() {
+    const newEmail = document.getElementById("account-email").value.trim();
+    const newNumber = document.getElementById("account-number").value.trim();
+    const updates = {};
+    if (newEmail !== currentUser.email)
+        updates.email = newEmail;
+    if (newNumber !== currentUser.number)
+        updates.number = newNumber;
+    if (Object.keys(updates).length === 0) {
+        alert("No changes to save");
+        return;
+    }
+    updateCurrentUser(updates)
+        .then(user => {
+            currentUser = user;
+            alert("Profile updates");
+        })
+        .catch(err => alert(err.message));
 }
 
 function displayCurrentUser() {
@@ -367,4 +410,9 @@ document.getElementById("modal-submit-btn").addEventListener("click", function (
             historyTable.appendChild(_createHistRow(booking));
         })
         .catch(err => alert(err.message));
+});
+
+document.getElementById("account-panel").addEventListener("submit", function (event) {
+    event.preventDefault();
+    submitUserChanges();
 });
