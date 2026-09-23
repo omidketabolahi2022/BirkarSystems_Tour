@@ -12,24 +12,40 @@ function logoutBooker() {
     window.location.replace("/auth");
 }
 
-function getAvailableTours() {
-    return fetch("/api/tours/available", {
-        headers: {
-            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
-        }
-    })
+function sendRequest(url, data) {
+    return fetch(url, data)
         .then(response => {
             if (!response.ok) {
-                throw new Error(`failed to get current user with status ${response.status}`);
+                const err = new Error(`failed with status ${response.status}`);
+                err.status = response.status;
+                if (response.status === 401) {
+                    logoutBooker();
+                    alert("Token is invalid");
+                }
+                return response.json()
+                    .catch(() => ({}))
+                    .then(body => {
+                        if (body.detail)
+                            err.message = body.detail;
+                        throw err;
+                    }); 
             }
             return response.json();
         })
 }
 
+function getAvailableTours() {
+    return sendRequest("/api/tours/available", {
+        headers: {
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+        }
+    });
+}
+
 function displayValidTours() {
     const allToursPanel = document.getElementById("all-tours-panel");
 
-    Promise.all([getAvailableTours(), getMyAcceptedBookings()])
+    Promise.all([getAvailableTours(), getMyBookings(["accepted"])])
         .then(([toursResult, bookingsResult]) => {
             const bookedTourIDs = new Set(
                 bookingsResult.bookings.map(b => b.tourID)
@@ -43,22 +59,20 @@ function displayValidTours() {
         });
 }
 
-function getMyBookings() {
-    return fetch("/api/me/bookings", {
+function getMyBookings(includes_status) {
+    const urlParams = new URLSearchParams();
+    if (includes_status !== null && includes_status !== undefined) {
+        includes_status.forEach(stat => urlParams.append("has_status", stat));
+    }
+    return sendRequest(`/api/me/bookings?${urlParams}`, {
         headers: {
             "Authorization": `Bearer ${sessionStorage.getItem("token")}`
         }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`failed to get current user with status ${response.status}`);
-            }
-            return response.json();
-        })
+    });
 }
 
 function updateBooking(bookingID, updates) {
-    return fetch(`/api/me/bookings/${bookingID}`,
+    return sendRequest(`/api/me/bookings/${bookingID}`,
         {
             method: "PATCH",
             headers: {
@@ -67,13 +81,7 @@ function updateBooking(bookingID, updates) {
             },
             body: JSON.stringify(updates)
         }
-    )
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`failed to get current user with status ${response.status}`);
-            }
-            return response.json();
-        })
+    );
 }
 
 function _formatBookingDate(rawDate) {
@@ -98,23 +106,9 @@ function displayBookingHistory() {
         })
 }
 
-function getMyAcceptedBookings() {
-    return fetch("/api/me/bookings?has_status=accepted", {
-        headers: {
-            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`failed to get current user with status ${response.status}`);
-            }
-            return response.json();
-        })
-}
-
 function displayAcceptedBookings() {
     const myToursPanel = document.getElementById("my-tours-panel");
-    getMyAcceptedBookings()
+    getMyBookings(["accepted"])
         .then(result => {
             const myAcceptedBookings = result.bookings;
             myToursPanel.innerHTML = "";
@@ -127,21 +121,15 @@ function displayAcceptedBookings() {
 }
 
 function getCurrentUser() {
-    return fetch("/api/me", {
+    return sendRequest("/api/me", {
         headers: {
             "Authorization": `Bearer ${sessionStorage.getItem("token")}`
         }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`failed to get current user with status ${response.status}`);
-            }
-            return response.json();
-        })
+    });
 }
 
 function updateCurrentUser(updates) {
-    return fetch("/api/me",
+    return sendRequest("/api/me",
         {
             method: "PATCH",
             headers: {
@@ -150,13 +138,7 @@ function updateCurrentUser(updates) {
             },
             body: JSON.stringify(updates)
         }
-    )
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`failed to get current user with status ${response.status}`);
-            }
-            return response.json();
-        })
+    );
 }
 
 function submitUserChanges() {
@@ -194,6 +176,29 @@ displayValidTours();
 displayCurrentUser();
 displayBookingHistory();
 displayAcceptedBookings();
+
+document.getElementById("modal-num-people").addEventListener("input", updateModalTotal);
+document.getElementById("modal-cancel-btn").addEventListener("click", closeBookingModal);
+
+document.getElementById("modal-submit-btn").addEventListener("click", function () {
+    const numPeople = Number(document.getElementById("modal-num-people").value);
+    if (!numPeople || numPeople < 1) return;
+
+    submitBooking(bookingModalTourID, numPeople)
+        .then(booking => {
+            closeBookingModal();
+            displayValidTours();
+            displayAcceptedBookings();
+            displayBookingHistory();
+
+        })
+        .catch(err => alert(err.message));
+});
+
+document.getElementById("account-panel").addEventListener("submit", function (event) {
+    event.preventDefault();
+    submitUserChanges();
+});
 
 
 // the widget creation functions are put at the bottom
@@ -247,7 +252,6 @@ function _createTourCard(tour, alreadyBooked) {
     bookBtn.type = "button";
     bookBtn.className = "btn btn-primary";
     bookBtn.textContent = "Book";
-    bookBtn.dataset.tourId = tour.tourID;
     bookBtn.addEventListener("click", () => openBookingModal(tour));
     actionGroup.appendChild(bookBtn);
 
@@ -271,7 +275,6 @@ function _createTourCard(tour, alreadyBooked) {
 
 function _createHistRow(booking) {
     const row = document.createElement("tr");
-    row.dataset.bookingId = booking.bookingID;
 
     const tourCell = document.createElement("td");
     tourCell.textContent = booking.tour_name;
@@ -344,75 +347,24 @@ function updateModalTotal() {
 }
 
 function submitBooking(tourID, num_people) {
-    return fetch("/api/me/bookings", {
+    return sendRequest("/api/me/bookings", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${sessionStorage.getItem("token")}`
         },
         body: JSON.stringify({ tourID,  num_people })
-    }).then(response => {
-        if (!response.ok) {
-            throw new Error(`booking failed with status ${response.status}`);
-        }
-        return response.json();
     });
-}
-
-function markTourAsBooked(tourID) {
-    const bookBtn = document.querySelector(`button[data-tour-id="${tourID}"]`);
-    if (!bookBtn) return;
-    bookBtn.disabled = true;
-    bookBtn.parentElement.querySelector(".already-booked-label").style.display = "inline";
-}
-
-function reenableBookButton(tourID) {
-    const bookBtn = document.querySelector(`button[data-tour-id="${tourID}"]`);
-    if (!bookBtn) return; // tour might not be in the currently-rendered list at all
-    bookBtn.disabled = false;
-    bookBtn.parentElement.querySelector(".already-booked-label").style.display = "none";
-}
-
-function updateHistoryRowStatus(bookingID, newStatus) {
-    const row = document.querySelector(`#historyTable tr[data-booking-id="${bookingID}"]`);
-    if (!row) return;
-    const badge = row.querySelector(".status-badge");
-    badge.textContent = newStatus;
-    badge.className = `status-badge status-${newStatus}`;
 }
 
 function cancelSelectedBooking(booking, bookingRow) {
     updateBooking(booking.bookingID, {status: "canceled"})
         .then(result => {
             bookingRow.remove();
-            reenableBookButton(booking.tourID);
-            updateHistoryRowStatus(booking.bookingID, "canceled");
+            displayValidTours();
+            displayAcceptedBookings();
+            displayBookingHistory();
             alert("Booking canceled successfully");
         })
         .catch(err => alert(err.message));
 }
-
-document.getElementById("modal-num-people").addEventListener("input", updateModalTotal);
-document.getElementById("modal-cancel-btn").addEventListener("click", closeBookingModal);
-
-document.getElementById("modal-submit-btn").addEventListener("click", function () {
-    const numPeople = Number(document.getElementById("modal-num-people").value);
-    if (!numPeople || numPeople < 1) return;
-
-    submitBooking(bookingModalTourID, numPeople)
-        .then(booking => {
-            markTourAsBooked(bookingModalTourID);
-            const myToursPanel = document.getElementById("my-tours-panel");
-            const bookedCard = _createBookedCard(booking);
-            myToursPanel.appendChild(bookedCard);
-            closeBookingModal();
-            const historyTable = document.getElementById("historyTable");
-            historyTable.appendChild(_createHistRow(booking));
-        })
-        .catch(err => alert(err.message));
-});
-
-document.getElementById("account-panel").addEventListener("submit", function (event) {
-    event.preventDefault();
-    submitUserChanges();
-});

@@ -27,6 +27,7 @@ function confirmSignup() {
         singupStatus.textContent = "Passwords do not match";
         singupStatus.classList.remove("alert-success");
         singupStatus.classList.add("alert-error");
+        singupStatus.hidden = false;
         return;
     }
     signupBooker(username, password, email, number)
@@ -34,11 +35,13 @@ function confirmSignup() {
             singupStatus.textContent = "Signup successful!";
             singupStatus.classList.remove("alert-error");
             singupStatus.classList.add("alert-success");
+            singupStatus.hidden = false;
         })
         .catch(err => {
             singupStatus.textContent = `Signup failed: ${err.message}`;
             singupStatus.classList.remove("alert-success");
             singupStatus.classList.add("alert-error");
+            singupStatus.hidden = false;
         })
 
 }
@@ -75,6 +78,7 @@ function confirmLogin() {
             loginStatus.textContent = "Login successful!";
             loginStatus.classList.remove("alert-error");
             loginStatus.classList.add("alert-success");
+            loginStatus.hidden = false;
             // TODO: how do we handle the transition if the logged in user is a manager not a booker?
             window.location.href = "/booker-home";
         })
@@ -82,6 +86,7 @@ function confirmLogin() {
             loginStatus.textContent = `Login failed: ${err.message}`;
             loginStatus.classList.remove("alert-success");
             loginStatus.classList.add("alert-error");
+            loginStatus.hidden = false;
         })
 
 }

@@ -254,7 +254,6 @@ def updateBooking(
     current_user: AppUser = Depends(getCurrentUser),
     session: Session = Depends(getSession)
 ):
-    print(f"Received: {bookingID}")
     booking_record = session.get(Booking, bookingID)
     if not booking_record:
         raise HTTPException(status_code=404, detail="Booking not found")
