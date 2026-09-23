@@ -2,11 +2,8 @@ let currentUser = null;
 let bookingModalTourID = null;
 let bookingModalTourPrice = 0;
 
-/* TODO: maybe instead of manually updating the 'All tours', 'My tours' and transaction history
-section I could just refersh them through the DB?
-*/
 
-function logoutBooker() {
+function logout() {
     sessionStorage.removeItem("token");
     currentUser = null;
     window.location.replace("/auth");
@@ -19,7 +16,7 @@ function sendRequest(url, data) {
                 const err = new Error(`failed with status ${response.status}`);
                 err.status = response.status;
                 if (response.status === 401) {
-                    logoutBooker();
+                    logout();
                     alert("Token is invalid");
                 }
                 return response.json()

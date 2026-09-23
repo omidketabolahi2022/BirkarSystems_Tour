@@ -157,6 +157,87 @@ def getAvailableTours(
 # ---------------------
 # PROTECTED APIs
 
+@app.post("/api/tours")
+def createTour(
+    details: dict = Body(),
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    tour_name = details["tour_name"]
+    source = details["source"]
+    destination = details["destination"]
+    start_time = datetime.fromisoformat(details["start_time"])
+    day_length = details["day_length"]
+    capacity = details["capacity"]
+    price = details["price"]
+    status = details.get("status", "pending")
+    description = details.get("description")
+    new_tour = Tour(
+        tour_name=tour_name,
+        source=source,
+        destination=destination,
+        start_time=start_time,
+        day_length=day_length,
+        capacity=capacity,
+        price=price,
+        status=status,
+        description=description
+    )
+    try:
+        session.add(new_tour)
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(status_code=400, detail="integrity issue")
+    return {
+        "tourID": new_tour.tourID,
+        "tour_name": tour_name,
+        "source": source,
+        "destination": destination,
+        "start_time": start_time,
+        "day_length": day_length,
+        "capacity": capacity,
+        "price": price,
+        "status": status,
+        "description": description
+    }
+
+
+class TourUpdate(BaseModel):
+    tour_name : str | None = None
+    start_time: datetime | None = None
+    day_length: int | None = None
+    capacity: int | None = None
+    status: str | None = None
+
+@app.patch("/api/tours/{tourID}")
+def updateTour(
+    tourID: int,
+    updates: TourUpdate,
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    tour_record = session.get(Tour, tourID)
+    if not tour_record:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    if current_user.role != "manager":
+        raise HTTPException(status_code=403, detail="Only managers can edit tours")
+    for field, value in updates.model_dump(exclude_unset=True).items():
+        setattr(tour_record, field, value)
+    session.commit()
+    return {
+        "tourID": tour_record.tourID,
+        "tour_name": tour_record.tour_name,
+        "source": tour_record.source,
+        "destination": tour_record.destination,
+        "start_time": tour_record.start_time,
+        "day_length": tour_record.day_length,
+        "capacity": tour_record.capacity,
+        "price": tour_record.price,
+        "status": tour_record.status,
+        "description": tour_record.description
+    }
+
 
 @app.get("/api/me")
 def getMe(current_user: AppUser = Depends(getCurrentUser)):
