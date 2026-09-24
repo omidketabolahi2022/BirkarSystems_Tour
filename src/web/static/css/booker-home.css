@@ -8,14 +8,16 @@
    ============================================================ */
 #tab-all-tours:checked ~ .tabs label[for="tab-all-tours"],
 #tab-my-tours:checked ~ .tabs label[for="tab-my-tours"],
-#tab-my-account:checked ~ .tabs label[for="tab-my-account"] {
+#tab-my-account:checked ~ .tabs label[for="tab-my-account"],
+#tab-support:checked ~ .tabs label[for="tab-support"] {
   color: var(--color-primary);
   border-bottom-color: var(--color-primary);
 }
 
 #tab-all-tours:checked ~ .panels #all-tours-panel,
 #tab-my-tours:checked ~ .panels #my-tours-panel,
-#tab-my-account:checked ~ .panels #account-panel {
+#tab-my-account:checked ~ .panels #account-panel,
+#tab-support:checked ~ .panels #support-panel {
   display: block;
 }
 

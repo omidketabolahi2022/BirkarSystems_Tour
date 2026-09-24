@@ -365,3 +365,217 @@ function cancelSelectedBooking(booking, bookingRow) {
         })
         .catch(err => alert(err.message));
 }
+
+
+// -------------------
+
+// ============================================================
+// SUPPORT THREADS (booker)
+// ============================================================
+function getMySupportThreads() {
+    // Same endpoint the manager page calls - the backend should
+    // return only this user's own threads (created_by = current
+    // user) when a booker is asking, and everything when a
+    // manager is asking.
+    return sendRequest("/api/support/threads",
+        {
+            headers: {
+                "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+            },
+        }
+
+    );
+}
+
+function displayMySupportThreads() {
+    const list = document.getElementById("threads-list");
+    getMySupportThreads().then(result => {
+        list.innerHTML = "";
+        if (result.threads.length === 0) {
+            const empty = document.createElement("p");
+            empty.className = "booking-meta";
+            empty.textContent = "You haven't started any support threads yet.";
+            list.appendChild(empty);
+            return;
+        }
+        result.threads.forEach(thread => list.appendChild(createBookerThreadRow(thread)));
+    });
+}
+
+function createBookerThreadRow(thread) {
+    const row = document.createElement("div");
+    row.className = "booking-row";
+    row.dataset.threadId = thread.threadID;
+
+    const info = document.createElement("div");
+    const title = document.createElement("div");
+    title.className = "booking-title";
+    title.textContent = thread.tour_name || "General inquiry";
+    info.appendChild(title);
+
+    const meta = document.createElement("div");
+    meta.className = "booking-meta";
+    meta.textContent = `Opened ${_formatBookingDate(thread.created_at)}`;
+    info.appendChild(meta);
+    row.appendChild(info);
+
+    const badge = document.createElement("span");
+    badge.className = `status-badge status-${thread.status}`;
+    badge.textContent = thread.status;
+    row.appendChild(badge);
+
+    const viewBtn = document.createElement("button");
+    viewBtn.type = "button";
+    viewBtn.className = "btn btn-outline-neutral";
+    viewBtn.textContent = "View";
+    viewBtn.addEventListener("click", () => openThreadViewModal(thread));
+    row.appendChild(viewBtn);
+
+    return row;
+}
+
+let viewingThreadID = null;
+
+function openThreadViewModal(thread) {
+    viewingThreadID = thread.threadID;
+    document.getElementById("thread-view-title").textContent = thread.tour_name || "General inquiry";
+
+    const isClosed = thread.status === "closed";
+    document.getElementById("thread-view-reply-field").hidden = isClosed;
+    document.getElementById("thread-view-reply-btn").hidden = isClosed;
+    document.getElementById("thread-closed-note").hidden = !isClosed;
+    document.getElementById("thread-view-reply-text").value = "";
+
+    // TODO (backend): GET /api/support/threads/{threadID}/messages
+    sendRequest(`/api/support/threads/${thread.threadID}/messages`,
+        {
+            headers: {
+                "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+            },
+        }
+    )
+        .then(result => {
+            const box = document.getElementById("thread-view-messages");
+            box.innerHTML = "";
+            result.messages.forEach(msg => {
+                const item = document.createElement("div");
+                item.className = "thread-message";
+
+                const meta = document.createElement("div");
+                meta.className = "thread-message-meta";
+                meta.textContent = `${msg.sender_username} \u00B7 ${_formatBookingDate(msg.sent_at)}`;
+                item.appendChild(meta);
+
+                const content = document.createElement("div");
+                content.className = "thread-message-content";
+                content.textContent = msg.content;
+                item.appendChild(content);
+
+                box.appendChild(item);
+            });
+            document.getElementById("thread-view-modal-overlay").classList.add("is-open");
+        })
+        .catch(err => alert(err.message));
+}
+
+function closeThreadViewModal() {
+    document.getElementById("thread-view-modal-overlay").classList.remove("is-open");
+    viewingThreadID = null;
+}
+
+document.getElementById("thread-view-done-btn").addEventListener("click", closeThreadViewModal);
+
+document.getElementById("thread-view-reply-btn").addEventListener("click", function () {
+    const content = document.getElementById("thread-view-reply-text").value.trim();
+    if (!content) return;
+
+    // TODO (backend): POST /api/support/threads/{threadID}/messages
+    // - should reject this if the thread's status is 'closed'.
+    sendRequest(`/api/support/threads/${viewingThreadID}/messages`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+        },
+        body: JSON.stringify({ content }),
+    })
+        .then(() => closeThreadViewModal())
+        .catch(err => alert(err.message));
+});
+
+
+// ============================================================
+// NEW THREAD MODAL
+// ============================================================
+function openNewThreadModal() {
+    document.getElementById("new-thread-message").value = "";
+
+    const tourSelect = document.getElementById("new-thread-tour");
+    tourSelect.innerHTML = '<option value="">No specific tour</option>';
+    sendRequest("/api/tours/available").then(result => {
+        result.tours.forEach(tour => {
+            const opt = document.createElement("option");
+            opt.value = tour.tourID;
+            opt.textContent = tour.tour_name;
+            tourSelect.appendChild(opt);
+        });
+    });
+
+    const managerSelect = document.getElementById("new-thread-manager");
+    managerSelect.innerHTML = '<option value="">No preference</option>';
+    // TODO (backend): GET /api/managers -> [{userID, username}, ...]
+    sendRequest("/api/managers")
+        .then(result => {
+            result.managers.forEach(manager => {
+                const opt = document.createElement("option");
+                opt.value = manager.userID;
+                opt.textContent = manager.username;
+                managerSelect.appendChild(opt);
+            });
+        })
+        .catch(() => {}); // optional field - fine if this list fails to load
+
+    document.getElementById("new-thread-modal-overlay").classList.add("is-open");
+}
+
+function closeNewThreadModal() {
+    document.getElementById("new-thread-modal-overlay").classList.remove("is-open");
+}
+
+document.getElementById("new-thread-btn").addEventListener("click", openNewThreadModal);
+document.getElementById("new-thread-cancel-btn").addEventListener("click", closeNewThreadModal);
+
+document.getElementById("new-thread-submit-btn").addEventListener("click", function () {
+    const content = document.getElementById("new-thread-message").value.trim();
+    if (!content) {
+        alert("Please describe your issue before submitting.");
+        return;
+    }
+    const tourID = document.getElementById("new-thread-tour").value || null;
+    const assignedManager = document.getElementById("new-thread-manager").value || null;
+
+    // TODO (backend): POST /api/support/threads - creates the
+    // SupportThread row (created_by = current user, status =
+    // 'open') AND its first SupportMessage row together.
+    sendRequest("/api/support/threads", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+        },
+        body: JSON.stringify({
+            tourID: tourID ? Number(tourID) : null,
+            assigned_manager: assignedManager ? Number(assignedManager) : null,
+            content,
+        }),
+    })
+        .then(() => {
+            closeNewThreadModal();
+            displayMySupportThreads();
+        })
+        .catch(err => alert(err.message));
+});
+
+
+// Add this alongside your other initial-load calls:
+displayMySupportThreads();

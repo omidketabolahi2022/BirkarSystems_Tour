@@ -6,7 +6,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_
 from pwdlib import PasswordHash
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -156,6 +156,12 @@ def getAvailableTours(
     )
     tours_list = session.execute(stmt).scalars().all()
     return {"tours": tours_list}
+
+@app.get("/api/managers")
+def getManagers(session: Session = Depends(getSession)):
+    stmt = select(AppUser).where(AppUser.role == "manager")
+    managers_list = session.execute(stmt).scalars().all()
+    return {"managers": managers_list}
 
 # ---------------------
 # PROTECTED APIs
@@ -359,4 +365,122 @@ def updateBooking(
         "booking_date": booking_record.booking_date,
         "status": booking_record.status,
         "num_people": booking_record.num_people
+    }
+
+# TODO: naming inconsistency where I have previously written '/api/me/booking' but now I have '/api/support/threads' where
+# it returns this persons threads only.
+@app.get("/api/support/threads")
+def getMyThreads(
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    if current_user.role == "manager":
+        stmt = select(SupportThread).where(
+            or_(
+                SupportThread.assigned_manager.is_(None),
+                SupportThread.assigned_manager == current_user.userID
+            )
+        )
+    else:
+        stmt = select(SupportThread).where(SupportThread.created_by == current_user.userID)
+    stmt = stmt.options(joinedload(SupportThread.tour))
+    threads_list = session.execute(stmt).scalars().all()
+    threads_list = [
+        {
+            "threadID": th.threadID,
+            "created_by": th.created_by,
+            "tourID": th.tourID,
+            "assigned_manager": th.assigned_manager,
+            "status": th.status,
+            "created_at": th.created_at,
+            "tour_name": th.tour.tour_name if th.tour else None
+        } for th in threads_list
+    ]
+    return {"threads": threads_list}
+
+@app.post("/api/support/threads")
+def createSupportThread(
+    details: dict = Body(),
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    if current_user.role != "booker":
+        raise HTTPException(status_code=403, detail="only bookers can create threads")
+    created_by = current_user.userID
+    tourID = details.get("tourID")
+    assigned_manager = details.get("assigned_manager")
+    # status = details.get("status", "open")
+    new_thread = SupportThread(
+        created_by=created_by,
+        tourID=tourID,
+        assigned_manager=assigned_manager,
+        # status & created_at will be handled by the DBMS
+    )
+    try:
+        session.add(new_thread)
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(status_code=400, detail="integrity issue")
+    return {
+        "threadID": new_thread.threadID,
+        "created_by": new_thread.created_by,
+        "tourID": new_thread.tourID,
+        "assigned_manager": new_thread.assigned_manager,
+        "status": new_thread.status,
+        "created_at": new_thread.created_at
+    }
+
+@app.get("/api/support/threads/{threadID}/messages")
+def getThreadMessages(
+    threadID: int,
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    stmt = (
+        select(SupportMessage)
+        .where(SupportMessage.threadID == threadID)
+        .options(joinedload(SupportMessage.sender_user))
+    )
+    thread_messages = session.execute(stmt).scalars().all()
+    thread_messages = [
+        {
+            "messageID": msg.messageID,
+            "threadID": msg.threadID,
+            "sender": msg.sender,
+            "sender_username": msg.sender_user.username,
+            "content": msg.content,
+            "sent_at": msg.sent_at
+        } for msg in thread_messages
+    ]
+    return {"messages": thread_messages}
+
+
+@app.post("/api/support/threads/{threadID}/messages")
+def createThreadMessage(
+    threadID: int,
+    details: dict = Body(),
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    # TODO: check if threadID is valid or not
+    content = details["content"]
+    new_message = SupportMessage(
+        threadID=threadID,
+        sender=current_user.userID,
+        content=content,
+        # sent_at will be handled by the DBMS
+    )
+    try:
+        session.add(new_message)
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(status_code=400, detail="integrity issue")
+    return {
+        "messageID": new_message.messageID,
+        "threadID": new_message.threadID,
+        "sender": new_message.sender,
+        "content": new_message.content,
+        "sent_at": new_message.sent_at
     }

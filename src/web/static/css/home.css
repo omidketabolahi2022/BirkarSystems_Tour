@@ -313,6 +313,21 @@
   color: var(--color-text-muted);
 }
 
+.field select {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background-color: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.threads-list-wrapper {
+  margin-top: 1rem;
+}
+
 /* ============================================================
    MODAL
    One shared overlay+box structure - used for the booker's
