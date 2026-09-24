@@ -166,6 +166,8 @@ def createTour(
     current_user: AppUser = Depends(getCurrentUser),
     session: Session = Depends(getSession)
 ):
+    if current_user.role != "manager":
+        raise HTTPException(status_code=403, detail="Only managers can create tours")
     tour_name = details["tour_name"]
     source = details["source"]
     destination = details["destination"]

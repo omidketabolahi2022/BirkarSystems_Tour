@@ -58,16 +58,20 @@ function displayAllTours() {
         });
 }
 
-function toggleTourCancel(tour, card) {
-    const newStatus = tour.status === "canceled" ? "pending" : "canceled";
-    sendRequest(`/api/tours/${tour.tourID}`, {
+function updateTour(tourID, updates) {
+    return sendRequest(`/api/tours/${tourID}`, {
         method: "PATCH",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${sessionStorage.getItem("token")}`
         },
-        body: JSON.stringify({ status: newStatus }),
-    })
+        body: JSON.stringify(updates),
+    });
+}
+
+function toggleTourCancel(tour, card) {
+    const newStatus = tour.status === "canceled" ? "pending" : "canceled";
+    updateTour(tour.tourID, {status: newStatus})
         .then(updatedTour => {
             const freshCard = _createTourCard(updatedTour);
             card.replaceWith(freshCard);
@@ -101,20 +105,24 @@ document.getElementById("edit-tour-submit-btn").addEventListener("click", functi
         // price: Number(document.getElementById("edit-price").value),
     };
 
-    sendRequest(`/api/tours/${editingTourID}`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
-        },
-        body: JSON.stringify(updates),
-    })
+    updateTour(editingTourID, updates)
         .then(() => {
             closeEditTourModal();
             displayAllTours();
         })
         .catch(err => alert(err.message));
 });
+
+function createTour(newTour) {
+    return sendRequest("/api/tours", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+        },
+        body: JSON.stringify(newTour),
+    })
+}
 
 
 document.getElementById("create-tour-form").addEventListener("submit", function (event) {
@@ -130,14 +138,7 @@ document.getElementById("create-tour-form").addEventListener("submit", function 
         price: Number(document.getElementById("create-price").value),
         description: document.getElementById("create-description").value.trim() || null,
     };
-    sendRequest("/api/tours", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
-        },
-        body: JSON.stringify(newTour),
-    })
+    createTour(newTour)
         .then(() => {
             alert("Tour created successfully.");
             displayAllTours();
