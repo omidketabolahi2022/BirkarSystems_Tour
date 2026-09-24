@@ -93,7 +93,6 @@ def loginAppUser(
 ):
     username = form_data.username.strip()
     raw_password = form_data.password.strip()
-    print(username, raw_password)
     stmt = select(AppUser).where(AppUser.username == username)
     user_record = session.execute(stmt).scalar_one_or_none()
     if not user_record:
@@ -230,7 +229,7 @@ def updateTour(
 ):
     tour_record = session.get(Tour, tourID)
     if not tour_record:
-        raise HTTPException(status_code=404, detail="Booking not found")
+        raise HTTPException(status_code=404, detail="Tour not found")
     if current_user.role != "manager":
         raise HTTPException(status_code=403, detail="Only managers can edit tours")
     for field, value in updates.model_dump(exclude_unset=True).items():
@@ -383,12 +382,16 @@ def getMyThreads(
         )
     else:
         stmt = select(SupportThread).where(SupportThread.created_by == current_user.userID)
-    stmt = stmt.options(joinedload(SupportThread.tour))
+    stmt = stmt.options(
+        joinedload(SupportThread.tour),
+        joinedload(SupportThread.creator)
+    )
     threads_list = session.execute(stmt).scalars().all()
     threads_list = [
         {
             "threadID": th.threadID,
             "created_by": th.created_by,
+            "creator_username": th.creator.username,
             "tourID": th.tourID,
             "assigned_manager": th.assigned_manager,
             "status": th.status,
@@ -429,6 +432,35 @@ def createSupportThread(
         "assigned_manager": new_thread.assigned_manager,
         "status": new_thread.status,
         "created_at": new_thread.created_at
+    }
+
+class ThreadUpdate(BaseModel):
+    status: str | None = None
+
+@app.patch("/api/support/threads/{threadID}")
+def updateThread(
+    threadID: int,
+    updates: ThreadUpdate,
+    current_user: AppUser = Depends(getCurrentUser),
+    session: Session = Depends(getSession)
+):
+    thread_record = session.get(SupportThread, threadID)
+    if not thread_record:
+        raise HTTPException(status_code=404, detail="Thread not found")
+    if current_user.role != "manager":
+        raise HTTPException(status_code=403, detail="Only managers can update threads")
+    if thread_record.assigned_manager and current_user.userID != thread_record.assigned_manager:
+        raise HTTPException(status_code=403, detail="The thread does not belong to you")
+    for field, value in updates.model_dump(exclude_unset=True).items():
+        setattr(thread_record, field, value)
+    session.commit()
+    return {
+        "threadID": thread_record.threadID,
+        "created_by": thread_record.created_by,
+        "tourID": thread_record.tourID,
+        "assigned_manager": thread_record.assigned_manager,
+        "status": thread_record.status,
+        "created_at": thread_record.created_at
     }
 
 @app.get("/api/support/threads/{threadID}/messages")

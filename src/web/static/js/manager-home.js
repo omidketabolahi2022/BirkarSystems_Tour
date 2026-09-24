@@ -149,7 +149,13 @@ document.getElementById("create-tour-form").addEventListener("submit", function 
 
 
 function getSupportThreads() {
-    // return sendRequest("/api/support/threads");
+    return sendRequest("/api/support/threads",
+        {
+            headers: {
+                "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+            },
+        }
+    );
 }
 
 function displaySupportThreads() {
@@ -166,14 +172,42 @@ function displaySupportThreads() {
 function openThreadModal(thread) {
     openThreadID = thread.threadID;
     document.getElementById("thread-modal-title").textContent =
-        thread.tour_name ? `${thread.username} \u00B7 ${thread.tour_name}` : thread.username;
+        thread.tour_name ? `${thread.creator_username} \u00B7 ${thread.tour_name}` : thread.creator_username;
     document.getElementById("thread-reply-text").value = "";
 
     const closeBtn = document.getElementById("thread-close-btn");
     closeBtn.disabled = thread.status === "closed";
     closeBtn.textContent = thread.status === "closed" ? "Thread closed" : "Close thread";
 
-    return;
+    sendRequest(`/api/support/threads/${thread.threadID}/messages`,
+        {
+            headers: {
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+            }
+        }
+    )
+        .then(result => {
+            const messagesBox = document.getElementById("thread-messages");
+            messagesBox.innerHTML = "";
+            result.messages.forEach(msg => {
+                const item = document.createElement("div");
+                item.className = "thread-message";
+
+                const meta = document.createElement("div");
+                meta.className = "thread-message-meta";
+                meta.textContent = `${msg.sender_username} \u00B7 ${_formatDate(msg.sent_at)}`;
+                item.appendChild(meta);
+
+                const content = document.createElement("div");
+                content.className = "thread-message-content";
+                content.textContent = msg.content;
+                item.appendChild(content);
+
+                messagesBox.appendChild(item);
+            });
+            document.getElementById("thread-modal-overlay").classList.add("is-open");
+        })
+        .catch(err => alert(err.message));
 }
 
 function closeThreadModal() {
@@ -187,11 +221,35 @@ document.getElementById("thread-reply-btn").addEventListener("click", function (
     const content = document.getElementById("thread-reply-text").value.trim();
     if (!content) return;
 
-    return;
+    sendRequest(`/api/support/threads/${openThreadID}/messages`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+        },
+        body: JSON.stringify({ content }),
+    })
+        .then(() => {
+            closeThreadModal();
+            displaySupportThreads();
+        })
+        .catch(err => alert(err.message));
 });
 
 document.getElementById("thread-close-btn").addEventListener("click", function () {
-    return;
+    sendRequest(`/api/support/threads/${openThreadID}`, {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+        },
+        body: JSON.stringify({ status: "closed" }),
+    })
+        .then(() => {
+            closeThreadModal();
+            displaySupportThreads();
+        })
+        .catch(err => alert(err.message));
 });
 
 
@@ -211,8 +269,8 @@ function _createThreadRow(thread) {
     const title = document.createElement("div");
     title.className = "booking-title";
     title.textContent = thread.tour_name
-        ? `${thread.username} \u00B7 ${thread.tour_name}`
-        : thread.username;
+        ? `${thread.creator_username} \u00B7 ${thread.tour_name}`
+        : thread.creator_username;
     info.appendChild(title);
 
     const meta = document.createElement("div");

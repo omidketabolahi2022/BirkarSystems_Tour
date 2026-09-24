@@ -383,7 +383,6 @@ function getMySupportThreads() {
                 "Authorization": `Bearer ${sessionStorage.getItem("token")}`
             },
         }
-
     );
 }
 
